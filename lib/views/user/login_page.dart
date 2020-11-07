@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dmzj/app/api.dart';
 import 'package:flutter_dmzj/app/user_helper.dart';
 import 'package:flutter_dmzj/app/user_info.dart';
+import 'package:flutter_dmzj/app/utils.dart';
 import 'package:flutter_dmzj/models/user/user_model.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
@@ -18,8 +19,8 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   bool _loading = false;
-  final TextEditingController _userController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _userName = TextEditingController();
+  final TextEditingController _password = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
               Padding(
                 padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
                 child: TextField(
-                  controller: _userController,
+                  controller: _userName,
                   decoration: InputDecoration(
                     prefixIcon: Icon(Icons.account_circle),
                     fillColor: Colors.transparent,
@@ -53,9 +54,9 @@ class _LoginPageState extends State<LoginPage> {
               Padding(
                 padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
                 child: TextField(
-                  controller: _passwordController,
+                  controller: _password,
                   onSubmitted: (text) {
-                    _doLogin(_userController.text, _passwordController.text);
+                    _doLogin(_userName.text, text);
                   },
                   obscureText: true,
                   decoration: InputDecoration(
@@ -74,8 +75,8 @@ class _LoginPageState extends State<LoginPage> {
                         textColor: Colors.white,
                         minWidth: double.infinity,
                         child: Text("登录"),
-                        onPressed: () => _doLogin(
-                            _userController.text, _passwordController.text),
+                        onPressed: () =>
+                            _doLogin(_userName.text, _password.text),
                       ),
                     )
                   : Padding(

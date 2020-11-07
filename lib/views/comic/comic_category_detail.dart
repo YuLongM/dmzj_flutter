@@ -50,11 +50,17 @@ class _ComicCategoryDetailPageState extends State<ComicCategoryDetailPage>
     super.build(context);
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
         title: Hero(
           tag: widget.title,
           child: Material(
             type: MaterialType.transparency,
-            child: Text(widget.title),
+            child: Text(widget.title, style: TextStyle(fontSize: 18,color: Colors.white)),
           ),
         ),
         actions: <Widget>[

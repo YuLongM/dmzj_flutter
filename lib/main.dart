@@ -20,13 +20,19 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:url_launcher/url_launcher.dart';
-
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'app/app_theme.dart';
 import 'app/user_info.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   ConfigHelper.prefs = await SharedPreferences.getInstance();
+  if (Platform.isWindows || Platform.isLinux) {
+    // Initialize FFI
+    sqfliteFfiInit();
+    // Change the default factory
+    databaseFactory = databaseFactoryFfi;
+  }
   await initDatabase();
   runApp(MultiProvider(
     providers: [
@@ -38,17 +44,6 @@ void main() async {
     ],
     child: MyApp(),
   ));
-  if (Platform.isAndroid) {
-    //设置Android头部的导航栏透明
-    SystemUiOverlayStyle systemUiOverlayStyle = SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent, //全局设置透明
-      statusBarIconBrightness: Brightness.dark,
-      statusBarBrightness: Brightness.light,
-      //light:黑色图标 dark：白色图标
-      //在此处设置statusBarIconBrightness为全局设置
-    );
-    SystemChrome.setSystemUIOverlayStyle(systemUiOverlayStyle);
-  }
 }
 
 Future initDatabase() async {
@@ -119,6 +114,7 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
 class MyHomePage extends StatefulWidget {
   @override
   _MyHomePageState createState() => _MyHomePageState();

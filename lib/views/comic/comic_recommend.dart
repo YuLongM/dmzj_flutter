@@ -44,13 +44,11 @@ class ComicRecommendState extends State<ComicRecommend>
   @override
   void initState() {
     super.initState();
-    _hideBanner = Utils.hideBanner;
-    Utils.changeHideBanner.on<bool>().listen((event) {
+    loadData().whenComplete(() {
       setState(() {
-        _hideBanner = event;
+        _loading = false;
       });
     });
-    loadData();
   }
 
   @override
@@ -83,23 +81,22 @@ class ComicRecommendState extends State<ComicRecommend>
       //todo: 适配平板页面，使用sliver组件
       body: EasyRefresh(
         onRefresh: refreshData,
+        header: MaterialHeader(),
+        footer: MaterialFooter(),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               //banner
-              (Platform.isIOS && _hideBanner)
-                  ? Container()
-                  : AppBanner(
-                      items: _banners
-                          .map<Widget>((i) => BannerImageItem(
-                                pic: i.cover,
-                                title: i.title,
-                                onTaped: () => Utils.openPage(
-                                    context, i.id, i.type,
-                                    url: i.url, title: i.title),
-                              ))
-                          .toList()),
+              AppBanner(
+                  items: _banners
+                      .map<Widget>((i) => BannerImageItem(
+                            pic: i.cover,
+                            title: i.title,
+                            onTaped: () => Utils.openPage(context, i.id, i.type,
+                                url: i.url, title: i.title),
+                          ))
+                      .toList()),
               _getItem2(
                 "我的订阅",
                 _mySub,
@@ -354,11 +351,19 @@ class ComicRecommendState extends State<ComicRecommend>
 
   bool _loading = false;
   Future loadData() async {
-    try {
-      if (_loading) {
-        return;
-      }
+    if (_loading) {
+      return;
+    }
+    setState(() {
       _loading = true;
+    });
+    loadPage();
+    loadLike();
+    loadMySub();
+  }
+
+  Future loadPage() async {
+    try {
       var response = await http.get(Api.comicRecommend);
       List jsonMap = jsonDecode(response.body);
       //Banner
@@ -471,12 +476,8 @@ class ComicRecommendState extends State<ComicRecommend>
           });
         }
       }
-      await loadLike();
-      await loadMySub();
     } catch (e) {
       print(e);
-    } finally {
-      _loading = false;
     }
   }
 

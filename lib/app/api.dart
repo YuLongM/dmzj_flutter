@@ -333,7 +333,10 @@ class Api {
   }
 
   static String defaultParameter() {
-    return "channel=${Platform.operatingSystem}&version$version&timestamp=$timeStamp";
+    if (Platform.isWindows || Platform.isLinux) {
+      return "channel=Android&version$version&timestamp=$timeStamp";
+    } else
+      return "channel=${Platform.operatingSystem}&version$version&timestamp=$timeStamp";
   }
 
   static String sign(String content, String mode) {

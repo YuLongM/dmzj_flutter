@@ -101,7 +101,7 @@ class _ComicDetailPageState extends State<ComicDetailPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    comicExpandHeight = getSafebar() + 200 + kTextTabBarHeight;
+    comicExpandHeight = getSafebar() + 200 + kTextTabBarHeight + kToolbarHeight;
     return Scaffold(
       body: NestedScrollView(
         controller: _scrollController,
