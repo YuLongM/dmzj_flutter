@@ -48,7 +48,6 @@ dependencies:
   # 阅读界面网络状态监听
   connectivity: ^2.0.0
   flutter_cache_manager: ^2.0.0
-  screen: ^0.0.5
   path_provider: ^1.6.21
   preload_page_view: ^0.1.4
   package_info: ^0.4.3

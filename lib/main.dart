@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dmzj/app/app_setting.dart';
 import 'package:flutter_dmzj/app/config_helper.dart';
-import 'package:flutter_dmzj/app/utils.dart';
 import 'package:flutter_dmzj/sql/comic_down.dart';
 import 'package:flutter_dmzj/sql/comic_history.dart';
 import 'package:flutter_dmzj/views/comic/comic_home.dart';
@@ -19,7 +18,6 @@ import 'package:flutter_dmzj/views/user/user_page.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'app/app_theme.dart';
 import 'app/user_info.dart';
@@ -91,7 +89,6 @@ class MyApp extends StatelessWidget {
         primarySwatch: Provider.of<AppTheme>(context).themeColor,
         accentColor: Provider.of<AppTheme>(context).themeColor,
         toggleableActiveColor: Provider.of<AppTheme>(context).themeColor,
-        textSelectionColor: Provider.of<AppTheme>(context).themeColor,
       ),
       darkTheme: (Provider.of<AppTheme>(context).sysDark)
           ? ThemeData(
@@ -135,99 +132,102 @@ class _MyHomePageState extends State<MyHomePage>
   @override
   void initState() {
     super.initState();
-    //checkUpdate();
   }
-
-  // void checkUpdate() async {
-  //   var newVer = await Utils.checkVersion();
-  //   if (newVer == null) {
-  //     return;
-  //   }
-  //   if (await Utils.showAlertDialogAsync(
-  //       context, Text('有新版本可以更新'), Text(newVer.message))) {
-  //     if (Platform.isAndroid) {
-  //       launch(newVer.android_url);
-  //     } else {
-  //       launch(newVer.ios_url);
-  //     }
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
+    return MediaQuery.of(context).size.width <= 600
+        ? smallView()
+        : middleView();
+  }
+
+  void onNavigateTap(int index) {
+    if (index == 1 && newsPage == null) {
+      newsPage = NewsHomePage();
+      pages[1] = newsPage;
+    }
+    if (index == 2 && novelPage == null) {
+      novelPage = NovelHomePage();
+      pages[2] = novelPage;
+    }
+    _index = index;
+    return;
+  }
+
+  Widget bodyView() {
+    return Row(
+      children: <Widget>[
+        Expanded(
+            child: IndexedStack(
+          index: _index,
+          children: pages,
+        ))
+      ],
+    );
+  }
+
+  List<String> navLabel = ["漫画", "新闻", "小说", "我的"];
+  List<IconData> navIcon = [
+    Icons.library_books,
+    Icons.whatshot,
+    Icons.book,
+    Icons.account_circle
+  ];
+
+  Widget smallView() {
     return Scaffold(
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _index,
-        onTap: (index) {
-          setState(() {
-            if (index == 1 && newsPage == null) {
-              newsPage = NewsHomePage();
-              pages[1] = newsPage;
-            }
-            if (index == 2 && novelPage == null) {
-              novelPage = NovelHomePage();
-              pages[2] = novelPage;
-            }
-            _index = index;
-          });
-        },
-        items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            label: "漫画",
-            icon: Icon(Icons.library_books),
-          ),
-          BottomNavigationBarItem(
-            label: "新闻",
-            icon: Icon(Icons.whatshot),
-          ),
-          BottomNavigationBarItem(
-            label: "轻小说",
-            icon: Icon(Icons.book),
-          ),
-          BottomNavigationBarItem(
-            label: "我的",
-            icon: Icon(Icons.account_circle),
-          ),
-        ],
+        bottomNavigationBar: BottomNavigationBar(
+            type: BottomNavigationBarType.fixed,
+            currentIndex: _index,
+            onTap: (index) {
+              setState(() {
+                onNavigateTap(index);
+              });
+            },
+            items: List<BottomNavigationBarItem>.generate(
+                navLabel.length,
+                (index) => BottomNavigationBarItem(
+                      label: navLabel[index],
+                      icon: Icon(navIcon[index]),
+                    ))),
+        body: bodyView());
+  }
+
+  Widget middleView() {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(navLabel[_index]),
       ),
-      body: Row(
-        children: <Widget>[
-          // NavigationRail(
-          //   backgroundColor: Theme.of(context).bottomAppBarColor,
-          //     onDestinationSelected: (int index) {
-          //       setState(() {
-          //         _index = index;
-          //       });
-          //     },
-          //     labelType: NavigationRailLabelType.all,
-          //     destinations: [
-          //       NavigationRailDestination(
-          //         icon: Icon(Icons.library_books),
-          //         label: Text('漫画'),
-          //       ),
-          //       NavigationRailDestination(
-          //         icon: Icon(Icons.whatshot),
-          //         label: Text('新闻'),
-          //       ),
-          //       NavigationRailDestination(
-          //         icon: Icon(Icons.book),
-          //         label: Text('轻小说'),
-          //       ),
-          //       NavigationRailDestination(
-          //         icon: Icon(Icons.account_circle),
-          //         label: Text('我的'),
-          //       ),
-          //     ],
-          //     selectedIndex: _index),
-          // VerticalDivider(thickness: 1, width: 1),
-          Expanded(
-              child: IndexedStack(
-            index: _index,
-            children: pages,
-          ))
-        ],
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      drawer: Drawer(
+        child: ListView.builder(
+            padding: EdgeInsets.zero,
+            itemCount: navLabel.length + 1,
+            itemBuilder: (context, index) {
+              if (index == 0) {
+                return DrawerHeader(
+                  child: Text('Drawer Header'),
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                  ),
+                );
+              } else {
+                index = index - 1;
+              }
+              return ListTile(
+                selected: index == _index,
+                dense: true,
+                leading: Icon(navIcon[index]),
+                title: Text(navLabel[index]),
+                onTap: () {
+                  setState(() {
+                    onNavigateTap(index);
+                  });
+                  Navigator.pop(context);
+                },
+              );
+            }),
+      ),
+      body: bodyView(),
     );
   }
 }

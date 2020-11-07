@@ -41,7 +41,7 @@ class Utils {
         content: new Text(content),
         action: new SnackBarAction(label: action, onPressed: onPressed));
 
-    Scaffold.of(context).showSnackBar(snackBar);
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   static void showSnackbar(BuildContext context, String content,

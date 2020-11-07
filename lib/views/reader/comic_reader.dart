@@ -28,9 +28,7 @@ import 'package:http/http.dart' as http;
 import 'package:photo_view/photo_view.dart';
 import 'package:preload_page_view/preload_page_view.dart';
 import 'package:provider/provider.dart';
-import 'package:screen/screen.dart';
 import 'package:share/share.dart';
-//todo: 查看视觉优化，章节切换问题，尝试类似refresh的操作
 
 class ComicReaderPage extends StatefulWidget {
   final int comicId;
@@ -63,11 +61,6 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
     if (ConfigHelper.getComicShowStatusBar()) {
       SystemChrome.setEnabledSystemUIOverlays([]);
     }
-    //亮度信息
-    if (!ConfigHelper.getComicSystemBrightness()) {
-      Screen.setBrightness(ConfigHelper.getComicBrightness());
-    }
-    Screen.keepOn(ConfigHelper.getComicWakelock());
 
     _currentItem = widget.item;
 
@@ -146,7 +139,6 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
   @override
   void dispose() {
     SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
-    Screen.keepOn(false);
     int page = 1;
     if (!ConfigHelper.getComicVertical() ?? false) {
       print(_selectIndex);
@@ -829,44 +821,6 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
               children: <Widget>[
                 SwitchListTile(
                     title: Text(
-                      "使用系统亮度",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    value:
-                        Provider.of<AppSetting>(context).comicSystemBrightness,
-                    onChanged: (e) {
-                      Provider.of<AppSetting>(context, listen: false)
-                          .changeComicSystemBrightness(e);
-                    }),
-                !Provider.of<AppSetting>(context).comicSystemBrightness
-                    ? Row(
-                        children: <Widget>[
-                          SizedBox(width: 12),
-                          Icon(
-                            Icons.brightness_2,
-                            color: Colors.white,
-                            size: 18,
-                          ),
-                          Expanded(
-                              child: Slider(
-                                  value: Provider.of<AppSetting>(context)
-                                      .comicBrightness,
-                                  max: 1,
-                                  min: 0.01,
-                                  onChanged: (e) {
-                                    Screen.setBrightness(e);
-                                    Provider.of<AppSetting>(context,
-                                            listen: false)
-                                        .changeBrightness(e);
-                                  })),
-                          Icon(Icons.brightness_5,
-                              color: Colors.white, size: 18),
-                          SizedBox(width: 12),
-                        ],
-                      )
-                    : Container(),
-                SwitchListTile(
-                    title: Text(
                       "使用网页API",
                       style: TextStyle(color: Colors.white),
                     ),
@@ -904,17 +858,6 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
                               .changeReadReverse(e);
                         })
                     : Container(),
-                SwitchListTile(
-                    title: Text(
-                      "屏幕常亮",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    value: Provider.of<AppSetting>(context).comicWakelock,
-                    onChanged: (e) {
-                      Screen.keepOn(e);
-                      Provider.of<AppSetting>(context, listen: false)
-                          .changeComicWakelock(e);
-                    }),
                 SwitchListTile(
                     title: Text(
                       "全屏阅读",
