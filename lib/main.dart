@@ -136,9 +136,22 @@ class _MyHomePageState extends State<MyHomePage>
 
   @override
   Widget build(BuildContext context) {
-    return MediaQuery.of(context).size.width <= 600
-        ? smallView()
-        : middleView();
+    switch (decideView()) {
+      case 0:
+        return xsView();
+        break;
+      case 1:
+        return smView();
+        break;
+      case 2:
+        return mdView();
+        break;
+      case 3:
+        return lgView();
+        break;
+      default:
+        return mdView();
+    }
   }
 
   void onNavigateTap(int index) {
@@ -174,7 +187,24 @@ class _MyHomePageState extends State<MyHomePage>
     Icons.account_circle
   ];
 
-  Widget smallView() {
+  int decideView() {
+    double width = MediaQuery.of(context).size.width;
+    if (width < 1280) {
+      if (width < 960) {
+        if (width < 600) {
+          return 0;
+        } else {
+          return 1;
+        }
+      } else {
+        return 2;
+      }
+    } else {
+      return 3;
+    }
+  }
+
+  Widget xsView() {
     return Scaffold(
         bottomNavigationBar: BottomNavigationBar(
             type: BottomNavigationBarType.fixed,
@@ -193,7 +223,7 @@ class _MyHomePageState extends State<MyHomePage>
         body: bodyView());
   }
 
-  Widget middleView() {
+  Widget smView() {
     return Scaffold(
       appBar: AppBar(
         title: Text(navLabel[_index]),
@@ -228,6 +258,35 @@ class _MyHomePageState extends State<MyHomePage>
             }),
       ),
       body: bodyView(),
+    );
+  }
+
+  Widget mdView() {
+    return Scaffold(
+      body: Row(
+        children: [
+          Container(width: 300, color: Colors.blue),
+          Expanded(
+            child: bodyView(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget lgView() {
+    return Scaffold(
+      body: Row(
+        children: [
+          Container(width: 300, color: Colors.blue),
+          Expanded(
+            child: bodyView(),
+          ),
+          Expanded(
+            child: Container(color: Colors.blue),
+          )
+        ],
+      ),
     );
   }
 }
