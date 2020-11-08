@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dmzj/app/app_setting.dart';
 import 'package:flutter_dmzj/app/config_helper.dart';
+import 'package:flutter_dmzj/app/utils.dart';
 import 'package:flutter_dmzj/sql/comic_down.dart';
 import 'package:flutter_dmzj/sql/comic_history.dart';
 import 'package:flutter_dmzj/views/comic/comic_home.dart';
@@ -167,6 +168,42 @@ class _MyHomePageState extends State<MyHomePage>
     return;
   }
 
+  Widget drawerView() {
+    return Drawer(
+        child: ListView.builder(
+            padding: EdgeInsets.zero,
+            itemCount: navLabel.length + 1,
+            itemBuilder: (context, index) {
+              if (index == 0) {
+                return DrawerHeader(
+                  child: Center(
+                    child: ImageIcon(
+                      AssetImage("assets/icon_dmzj.png"),
+                      size: kToolbarHeight,
+                    ),
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                  ),
+                );
+              } else {
+                index = index - 1;
+              }
+              return ListTile(
+                selected: index == _index,
+                dense: true,
+                leading: Icon(navIcon[index]),
+                title: Text(navLabel[index]),
+                onTap: () {
+                  setState(() {
+                    onNavigateTap(index);
+                  });
+                  //Navigator.pop(context);
+                },
+              );
+            }));
+  }
+
   Widget bodyView() {
     return Row(
       children: <Widget>[
@@ -225,39 +262,39 @@ class _MyHomePageState extends State<MyHomePage>
 
   Widget smView() {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(navLabel[_index]),
+      body: Row(
+        children: [
+          Container(
+              width: kToolbarHeight,
+              color: Theme.of(context).accentColor,
+              child: ListView.builder(
+                  itemExtent: kToolbarHeight,
+                  padding: EdgeInsets.zero,
+                  itemCount: navLabel.length + 1,
+                  itemBuilder: (context, index) {
+                    if (index == 0) {
+                      return Padding(
+                        padding: EdgeInsets.all(8),
+                        child: ImageIcon(
+                          AssetImage("assets/icon_dmzj.png"),
+                        ),
+                      );
+                    }
+                    return IconButton(
+                      color: Colors.white,
+                      icon: Icon(navIcon[index - 1]),
+                      onPressed: () {
+                        setState(() {
+                          onNavigateTap(index - 1);
+                        });
+                      },
+                    );
+                  })),
+          Expanded(
+            child: bodyView(),
+          ),
+        ],
       ),
-      drawer: Drawer(
-        child: ListView.builder(
-            padding: EdgeInsets.zero,
-            itemCount: navLabel.length + 1,
-            itemBuilder: (context, index) {
-              if (index == 0) {
-                return DrawerHeader(
-                  child: Text('Drawer Header'),
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
-                  ),
-                );
-              } else {
-                index = index - 1;
-              }
-              return ListTile(
-                selected: index == _index,
-                dense: true,
-                leading: Icon(navIcon[index]),
-                title: Text(navLabel[index]),
-                onTap: () {
-                  setState(() {
-                    onNavigateTap(index);
-                  });
-                  Navigator.pop(context);
-                },
-              );
-            }),
-      ),
-      body: bodyView(),
     );
   }
 
@@ -265,7 +302,7 @@ class _MyHomePageState extends State<MyHomePage>
     return Scaffold(
       body: Row(
         children: [
-          Container(width: 300, color: Colors.blue),
+          Container(width: 300, child: drawerView()),
           Expanded(
             child: bodyView(),
           ),
@@ -278,13 +315,28 @@ class _MyHomePageState extends State<MyHomePage>
     return Scaffold(
       body: Row(
         children: [
-          Container(width: 300, color: Colors.blue),
+          Container(
+            width: 300,
+            child: drawerView(),
+          ),
           Expanded(
             child: bodyView(),
           ),
           Expanded(
-            child: Container(color: Colors.blue),
-          )
+              child: Stack(
+            children: [
+              Container(
+                color: Theme.of(context).accentColor,
+                child: Center(
+                  child: ImageIcon(
+                    AssetImage("assets/icon_dmzj.png"),
+                    size: kToolbarHeight,
+                  ),
+                ),
+              ),
+              Container()
+            ],
+          ))
         ],
       ),
     );
