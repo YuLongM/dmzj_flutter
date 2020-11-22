@@ -1,14 +1,14 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
 export "FLUTTER_ROOT=/home/yunjie/snap/flutter/common/flutter"
-export "FLUTTER_APPLICATION_PATH=/home/yunjie/Documents/flutter_projects/dmzj_flutter"
+export "FLUTTER_APPLICATION_PATH=/home/yunjie/Documents/release/dmzj_flutter"
 export "FLUTTER_TARGET=lib/main.dart"
 export "FLUTTER_BUILD_DIR=build"
 export "SYMROOT=${SOURCE_ROOT}/../build/ios"
 export "OTHER_LDFLAGS=$(inherited) -framework Flutter"
 export "FLUTTER_FRAMEWORK_DIR=/home/yunjie/snap/flutter/common/flutter/bin/cache/artifacts/engine/ios"
-export "FLUTTER_BUILD_NAME=1.1.1"
-export "FLUTTER_BUILD_NUMBER=201118"
+export "FLUTTER_BUILD_NAME=1.2.1"
+export "FLUTTER_BUILD_NUMBER=201120"
 export "DART_OBFUSCATION=false"
 export "TRACK_WIDGET_CREATION=false"
 export "TREE_SHAKE_ICONS=false"
