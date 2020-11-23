@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dmzj/app/config_helper.dart';
+import 'package:flutter_dmzj/helper/config_helper.dart';
 
-class AppSetting with ChangeNotifier {
-  AppSetting() {
+class ReaderConfigProvider with ChangeNotifier {
+  ReaderConfigProvider() {
     changeComicWebApi(ConfigHelper.getComicWebApi());
     changeComicVertical(ConfigHelper.getComicVertical());
     changeComicWakelock(ConfigHelper.getComicWakelock());
@@ -15,6 +15,7 @@ class AppSetting with ChangeNotifier {
     changeNovelLineHeight(ConfigHelper.getNovelLineHeight());
     changeNovelReadDirection(ConfigHelper.getNovelReadDirection());
     changeNovelReadTheme(ConfigHelper.getNovelTheme());
+    changeVolumekeyListen(ConfigHelper.getVolumeKeyListen());
   }
 
   bool _comicVerticalMode;
@@ -131,5 +132,13 @@ class AppSetting with ChangeNotifier {
     _novelReadTheme = value;
     notifyListeners();
     ConfigHelper.setNovelTheme(value);
+  }
+
+  bool _volumeKeyListen;
+  get volumekeyListen => _volumeKeyListen;
+  void changeVolumekeyListen(bool value) {
+    _volumeKeyListen = value;
+    notifyListeners();
+    ConfigHelper.setVolumeKeyListen(value);
   }
 }
