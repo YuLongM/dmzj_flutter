@@ -26,6 +26,8 @@ class _NovelCategoryDetailPageState extends State<NovelCategoryDetailPage>
   @override
   bool get wantKeepAlive => true;
 
+  bool _filterloaded = false;
+
   @override
   void initState() {
     super.initState();
@@ -65,31 +67,38 @@ class _NovelCategoryDetailPageState extends State<NovelCategoryDetailPage>
       endDrawer: Drawer(
         child: createFilter(),
       ),
-      body: EasyRefresh(
-        header: MaterialHeader(),
-        footer: MaterialFooter(),
-        child: GridView.builder(
-          padding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-          physics: ScrollPhysics(),
-          itemCount: _list.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: MediaQuery.of(context).size.width ~/ 160 < 3
-                  ? 3
-                  : MediaQuery.of(context).size.width ~/ 160,
-              crossAxisSpacing: 2.0,
-              mainAxisSpacing: 4.0,
-              childAspectRatio: getWidth() / ((getWidth() * (360 / 270)) + 48)),
-          itemBuilder: (context, i) => Utils.createCoverWidget(
-              _list[i].id, 2, _list[i].cover, _list[i].name, context,
-              author: _list[i].authors ?? ""),
-        ),
-        onRefresh: () async {
-          _page = 0;
+      body: _filterloaded
+          ? EasyRefresh(
+              header: MaterialHeader(),
+              footer: MaterialFooter(),
+              child: GridView.builder(
+                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                physics: ScrollPhysics(),
+                itemCount: _list.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: MediaQuery.of(context).size.width ~/ 160 < 3
+                        ? 3
+                        : MediaQuery.of(context).size.width ~/ 160,
+                    crossAxisSpacing: 2.0,
+                    mainAxisSpacing: 4.0,
+                    childAspectRatio:
+                        getWidth() / ((getWidth() * (360 / 270)) + 48)),
+                itemBuilder: (context, i) => Utils.createCoverWidget(
+                    _list[i].id, 2, _list[i].cover, _list[i].name, context,
+                    author: _list[i].authors ?? ""),
+              ),
+              onRefresh: () async {
+                _page = 0;
 
-          await loadData();
-        },
-        onLoad: loadData,
-      ),
+                await loadData();
+              },
+              onLoad: loadData,
+            )
+          : Container(
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
     );
   }
 
@@ -300,10 +309,14 @@ class _NovelCategoryDetailPageState extends State<NovelCategoryDetailPage>
         setState(() {
           _fiters = detail;
         });
-        loadData();
+        await loadData();
       }
     } catch (e) {
       print(e);
+    } finally {
+      setState(() {
+        _filterloaded = true;
+      });
     }
   }
 }
