@@ -6,9 +6,8 @@ import 'package:common_utils/common_utils.dart';
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:flutter_dmzj/helper/config_helper.dart';
+import 'package:flutter_dmzj/app/config_helper.dart';
 import 'package:flutter_dmzj/models/comic/comic_detail_model.dart';
-import 'package:flutter_dmzj/models/comic/comic_history_item.dart';
 import 'package:flutter_dmzj/models/novel/novel_volume_item.dart';
 import 'package:flutter_dmzj/models/version_info.dart';
 import 'package:flutter_dmzj/views/comic/comic_author.dart';
@@ -37,6 +36,7 @@ import 'user_helper.dart';
 class Utils {
   static EventBus changeComicHomeTabIndex = EventBus();
   static EventBus changeNovelHomeTabIndex = EventBus();
+  static EventBus changHistory = EventBus();
   static void showSnackbarWithAction(
       BuildContext context, String content, String action, Function onPressed) {
     final snackBar = new SnackBar(
@@ -509,15 +509,14 @@ class Utils {
       String comicTitle,
       bool isSubscribe,
       List<ComicDetailChapterItem> chapters,
-      ComicDetailChapterItem item,
-      ComicHistoryItem historyItem) async {
+      ComicDetailChapterItem item) async {
     var ls = chapters.toList();
     ls.sort((a, b) => a.chapter_order.compareTo(b.chapter_order));
     await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (BuildContext context) =>
-            ComicReaderPage(comicId, comicTitle, ls, item, isSubscribe,historyItem),
+            ComicReaderPage(comicId, comicTitle, ls, item, isSubscribe),
       ),
     );
   }

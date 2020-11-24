@@ -85,6 +85,14 @@ class ConfigHelper {
     prefs.setBool("ComicWebAPI", value);
   }
 
+  /// 漫画阅读记录
+  static int getComicHistory(int comicId) {
+    return prefs.getInt("comic$comicId") ?? 0;
+  }
+
+  static void setComicHistory(int comicId, int value) {
+    prefs.setInt("comic$comicId", value);
+  }
 
   /// 漫画阅读方向
   static bool getComicVertical() {
@@ -147,15 +155,6 @@ class ConfigHelper {
 
   static void setComicSystemBrightness(bool value) {
     prefs.setBool("ComicSystemBrightness", value);
-  }
-
-  ///阅读音量键翻页
-  static bool getVolumeKeyListen() {
-    return prefs.getBool("VolumeKeyListen") ?? false;
-  }
-
-  static void setVolumeKeyListen(bool value) {
-    prefs.setBool("VolumeKeyListen", value);
   }
 
   /// 小说阅读记录

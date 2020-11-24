@@ -5,11 +5,11 @@ import 'dart:ui';
 import 'package:common_utils/common_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:flutter_dmzj/helper/api.dart';
-import 'package:flutter_dmzj/helper/config_helper.dart';
-import 'package:flutter_dmzj/helper/user_helper.dart';
-import 'package:flutter_dmzj/provider/user_info_provider.dart';
-import 'package:flutter_dmzj/helper/utils.dart';
+import 'package:flutter_dmzj/app/api.dart';
+import 'package:flutter_dmzj/app/config_helper.dart';
+import 'package:flutter_dmzj/app/user_helper.dart';
+import 'package:flutter_dmzj/app/user_info.dart';
+import 'package:flutter_dmzj/app/utils.dart';
 import 'package:flutter_dmzj/models/novel/novel_detail_model.dart';
 import 'package:flutter_dmzj/models/novel/novel_volume_item.dart';
 import 'package:flutter_dmzj/views/other/comment_widget.dart';
@@ -47,9 +47,16 @@ class _NovelDetailPageState extends State<NovelDetailPage>
         _loading = false;
       });
     });
+    updateHistory();
     _scrollController = new ScrollController();
   }
 
+  void updateHistory() {
+    var his = ConfigHelper.getNovelHistory(widget.novelId);
+    setState(() {
+      historyChapter = his;
+    });
+  }
 
   @override
   void dispose() {
@@ -89,7 +96,7 @@ class _NovelDetailPageState extends State<NovelDetailPage>
                     title: (_detail != null) ? Text(_detail.name) : Text(""),
                     actions: (_detail != null)
                         ? <Widget>[
-                            Provider.of<AppUserInfoProvider>(context).isLogin &&
+                            Provider.of<AppUserInfo>(context).isLogin &&
                                     _isSubscribe
                                 ? IconButton(
                                     icon: Icon(Icons.favorite),
@@ -344,6 +351,7 @@ class _NovelDetailPageState extends State<NovelDetailPage>
                               context, widget.novelId, volumes, item,
                               novelTitle: _detail.name,
                               isSubscribe: _isSubscribe);
+                          updateHistory();
                         },
                         child: Container(
                           padding: EdgeInsets.symmetric(
@@ -401,12 +409,14 @@ class _NovelDetailPageState extends State<NovelDetailPage>
         await Utils.openNovelReader(
             context, widget.novelId, volumes, chapterItem,
             novelTitle: _detail.name, isSubscribe: _isSubscribe);
+        updateHistory();
         return;
       }
     } else {
       await Utils.openNovelReader(
           context, widget.novelId, volumes, volumes[0].chapters[0],
           novelTitle: _detail.name, isSubscribe: _isSubscribe);
+      updateHistory();
     }
   }
 
@@ -505,7 +515,7 @@ class _NovelDetailPageState extends State<NovelDetailPage>
         return;
       }
       var response = await http.get(Api.novelCheckSubscribe(widget.novelId,
-          Provider.of<AppUserInfoProvider>(context, listen: false).loginInfo.uid));
+          Provider.of<AppUserInfo>(context, listen: false).loginInfo.uid));
       var jsonMap = jsonDecode(response.body);
       setState(() {
         _isSubscribe = jsonMap["code"] == 0;
