@@ -219,6 +219,7 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
                     bottom: 0,
                     right: 0,
                   ),
+                  //左右翻页
                   Provider.of<ReaderConfigProvider>(context).comicVerticalMode
                       ? Positioned(child: Container())
                       : Positioned(
@@ -235,7 +236,11 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
                                 previousPage();
                               }
                             },
-                            child: Container(),
+                            child: Container(
+                              color: _showControls
+                                  ? Colors.white.withOpacity(0.35)
+                                  : Colors.transparent,
+                            ),
                           ),
                         ),
                   Provider.of<ReaderConfigProvider>(context).comicVerticalMode
@@ -254,7 +259,11 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
                                 nextPage();
                               }
                             },
-                            child: Container(),
+                            child: Container(
+                              color: _showControls
+                                  ? Colors.white.withOpacity(0.35)
+                                  : Colors.transparent,
+                            ),
                           ),
                         ),
 
@@ -396,6 +405,7 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
                   ),
                 ],
               )),
+      endDrawerEnableOpenDragGesture: false,
       endDrawer: Drawer(
         child: Container(
             height: MediaQuery.of(context).size.height,
