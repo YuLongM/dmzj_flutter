@@ -38,15 +38,12 @@ class _ComicDetailPageState extends State<ComicDetailPage>
   double detailExpandHeight = 150 + kToolbarHeight + 24;
   @override
   bool get wantKeepAlive => true;
+  bool _loaded = false;
 
   @override
   void initState() {
     super.initState();
-    loadData().whenComplete(() {
-      setState(() {
-        _loading = false;
-      });
-    });
+    loadData();
     _tabController = TabController(length: 3, vsync: this, initialIndex: 0);
   }
 
@@ -177,13 +174,15 @@ class _ComicDetailPageState extends State<ComicDetailPage>
                         context),
                   ),
                   SliverToBoxAdapter(
-                      child: (_detail != null)
+                      child: _detail != null
                           ? createDetail()
                           : (_noCopyright)
                               ? Center(
                                   child: Text("漫画走丢了 w(ﾟДﾟ)w ！"),
                                 )
-                              : Container()),
+                              : Container(
+                                  child: LinearProgressIndicator(),
+                                )),
                 ],
               );
             }),
@@ -601,6 +600,8 @@ class _ComicDetailPageState extends State<ComicDetailPage>
           eTag: api, maxAge: Duration(days: 7), fileExtension: 'json');
       setState(() {
         _detail = detail;
+        _loading = false;
+        _loaded = true;
       });
     } catch (e) {
       print(e);
