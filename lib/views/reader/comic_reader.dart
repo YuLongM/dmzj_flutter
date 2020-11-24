@@ -237,11 +237,7 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
                                 previousPage();
                               }
                             },
-                            child: Container(
-                              color: _showControls
-                                  ? Colors.white.withOpacity(0.35)
-                                  : Colors.transparent,
-                            ),
+                            child: Container(),
                           ),
                         ),
                   Provider.of<ReaderConfigProvider>(context).comicVerticalMode
@@ -260,11 +256,7 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
                                 nextPage();
                               }
                             },
-                            child: Container(
-                              color: _showControls
-                                  ? Colors.white.withOpacity(0.35)
-                                  : Colors.transparent,
-                            ),
+                            child: Container(),
                           ),
                         ),
 
@@ -535,13 +527,18 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
     return InkWell(
       onTap: () {
         setState(() {
-          if (_showChapters) {
-            _showChapters = false;
-            return;
-          }
+          // if (_showSideBar) {
+          //   _showSideBar = false;
+          //   return;
+          // }
           _showControls = !_showControls;
         });
       },
+      // onLongPress: () {
+      //   setState(() {
+      //     _showSideBar = true;
+      //   });
+      // },
       child: Container(
         color: Colors.black,
         child: ComicView.builder(
