@@ -267,7 +267,7 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
                         firstChild: AppBar(
                           elevation: 0,
                           backgroundColor:
-                              Color.fromARGB(255, 34, 34, 34).withOpacity(0.75),
+                              Color.fromARGB(255, 34, 34, 34).withOpacity(0.85),
                           title: ListTile(
                             dense: true,
                             title: Text(
@@ -307,11 +307,11 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
                               EdgeInsets.symmetric(vertical: 8, horizontal: 8),
                           width: MediaQuery.of(context).size.width,
                           color:
-                              Color.fromARGB(255, 34, 34, 34).withOpacity(0.75),
+                              Color.fromARGB(255, 34, 34, 34).withOpacity(0.85),
                           child: Column(
                             children: <Widget>[
                               Container(
-                                height: kTextTabBarHeight,
+                                height: kTextTabBarHeight / 2,
                                 child: !_loading
                                     ? Provider.of<ReaderConfigProvider>(context)
                                             .comicVerticalMode
@@ -753,6 +753,18 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
+                Container(
+                  padding: EdgeInsets.only(top: 8),
+                  child: Center(
+                    child: Container(
+                      height: 4,
+                      width: 40,
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.all(Radius.circular(2))),
+                    ),
+                  ),
+                ),
                 SwitchListTile(
                     title: Text(
                       "使用系统亮度",
