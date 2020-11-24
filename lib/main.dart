@@ -2,9 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dmzj/provider/reader_config_provider.dart';
-import 'package:flutter_dmzj/helper/config_helper.dart';
-import 'package:flutter_dmzj/database/comic_history.dart';
+import 'package:flutter_dmzj/app/app_setting.dart';
+import 'package:flutter_dmzj/app/config_helper.dart';
+import 'package:flutter_dmzj/sql/comic_down.dart';
+import 'package:flutter_dmzj/sql/comic_history.dart';
 import 'package:flutter_dmzj/views/comic/comic_home.dart';
 import 'package:flutter_dmzj/views/settings/comic_reader_settings.dart';
 import 'package:flutter_dmzj/views/settings/novel_reader_settings.dart';
@@ -21,9 +22,9 @@ import 'package:quick_actions/quick_actions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
-import 'database/app_theme_provider.dart';
-import 'provider/user_info_provider.dart';
-import 'helper/utils.dart';
+import 'app/app_theme.dart';
+import 'app/user_info.dart';
+import 'app/utils.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,12 +42,11 @@ void main() async {
 
   runApp(MultiProvider(
     providers: [
-      ChangeNotifierProvider<AppThemeProvider>(
-          create: (_) => AppThemeProvider(), lazy: false),
-      ChangeNotifierProvider<AppUserInfoProvider>(
-          create: (_) => AppUserInfoProvider(), lazy: false),
-      ChangeNotifierProvider<ReaderConfigProvider>(
-          create: (_) => ReaderConfigProvider(), lazy: false),
+      ChangeNotifierProvider<AppTheme>(create: (_) => AppTheme(), lazy: false),
+      ChangeNotifierProvider<AppUserInfo>(
+          create: (_) => AppUserInfo(), lazy: false),
+      ChangeNotifierProvider<AppSetting>(
+          create: (_) => AppSetting(), lazy: false),
       ChangeNotifierProvider(
         create: (_) => ComicHistoryProvider(),
         lazy: false,
@@ -73,12 +73,32 @@ Future initDatabase() async {
   var databasesPath = await getDatabasesPath();
   // File(databasesPath+"/nsplayer.db").deleteSync();
   var db = await openDatabase(databasesPath + "/comic_history.db", version: 1,
-      onCreate: (db, ver) async {
-    await ComicHistoryHelper.initTable(db);
+      onCreate: (Database _db, int version) async {
+    await _db.execute('''
+create table $comicHistoryTable ( 
+  $comicHistoryColumnComicID integer primary key not null, 
+  $comicHistoryColumnChapterID integer not null,
+  $comicHistoryColumnPage double not null,
+  $comicHistoryMode integer not null)
+''');
+
+    await _db.execute('''
+create table $comicDownloadTableName (
+$comicDownloadColumnChapterID integer primary key not null,
+$comicDownloadColumnChapterName text not null,
+$comicDownloadColumnComicID integer not null,
+$comicDownloadColumnComicName text not null,
+$comicDownloadColumnStatus integer not null,
+$comicDownloadColumnVolume text not null,
+$comicDownloadColumnPage integer ,
+$comicDownloadColumnCount integer ,
+$comicDownloadColumnSavePath text ,
+$comicDownloadColumnUrls text )
+''');
   });
 
   ComicHistoryHelper.db = db;
-  // ComicDownloadProvider.db = db;
+  ComicDownloadProvider.db = db;
 }
 
 class MyApp extends StatelessWidget {
@@ -86,26 +106,23 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'dmzj dev',
+      title: '动漫之家Flutter',
       theme: ThemeData(
-        brightness: Provider.of<AppThemeProvider>(context).isDark
+        brightness: Provider.of<AppTheme>(context).isDark
             ? Brightness.dark
             : Brightness.light,
-        primarySwatch: Provider.of<AppThemeProvider>(context).themeColor,
-        accentColor: Provider.of<AppThemeProvider>(context).themeColor,
-        toggleableActiveColor:
-            Provider.of<AppThemeProvider>(context).themeColor,
-        textSelectionColor: Provider.of<AppThemeProvider>(context).themeColor,
+        primarySwatch: Provider.of<AppTheme>(context).themeColor,
+        accentColor: Provider.of<AppTheme>(context).themeColor,
+        toggleableActiveColor: Provider.of<AppTheme>(context).themeColor,
+        textSelectionColor: Provider.of<AppTheme>(context).themeColor,
       ),
-      darkTheme: (Provider.of<AppThemeProvider>(context).sysDark)
+      darkTheme: (Provider.of<AppTheme>(context).sysDark)
           ? ThemeData(
               brightness: Brightness.dark,
-              primarySwatch: Provider.of<AppThemeProvider>(context).themeColor,
-              accentColor: Provider.of<AppThemeProvider>(context).themeColor,
-              toggleableActiveColor:
-                  Provider.of<AppThemeProvider>(context).themeColor,
-              textSelectionColor:
-                  Provider.of<AppThemeProvider>(context).themeColor,
+              primarySwatch: Provider.of<AppTheme>(context).themeColor,
+              accentColor: Provider.of<AppTheme>(context).themeColor,
+              toggleableActiveColor: Provider.of<AppTheme>(context).themeColor,
+              textSelectionColor: Provider.of<AppTheme>(context).themeColor,
             )
           : null,
       home: MyHomePage(),
@@ -144,8 +161,7 @@ class _MyHomePageState extends State<MyHomePage>
     final QuickActions quickActions = QuickActions();
     quickActions.initialize((String shortcutType) {
       int type = int.parse(shortcutType);
-      if (!Provider.of<AppUserInfoProvider>(context, listen: false).isLogin)
-        type = 0;
+      if (!Provider.of<AppUserInfo>(context, listen: false).isLogin) type = 0;
       print(type);
       switch (type) {
         case 1:
