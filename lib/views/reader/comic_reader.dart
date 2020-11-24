@@ -25,6 +25,7 @@ import 'package:flutter_easyrefresh/material_footer.dart';
 import 'package:flutter_easyrefresh/material_header.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:preload_page_view/preload_page_view.dart';
@@ -281,10 +282,12 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
                             dense: true,
                             title: Text(
                               widget.comicTitle,
+                              maxLines: 1,
                               style: TextStyle(color: Colors.white),
                             ),
                             subtitle: Text(
                               _currentItem.chapter_title,
+                              maxLines: 1,
                               style: TextStyle(color: Colors.white),
                             ),
                           ),
@@ -753,163 +756,157 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
   }
 
   void openSetting() {
-    showModalBottomSheet(
+    showMaterialModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
         return Material(
           color: Color.fromARGB(255, 34, 34, 34),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Container(
-                  padding: EdgeInsets.only(top: 8),
-                  child: Center(
-                    child: Container(
-                      height: 4,
-                      width: 40,
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.all(Radius.circular(2))),
-                    ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Container(
+                padding: EdgeInsets.only(top: 8),
+                child: Center(
+                  child: Container(
+                    height: 4,
+                    width: 40,
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.all(Radius.circular(2))),
                   ),
                 ),
-                SwitchListTile(
-                    title: Text(
-                      "使用系统亮度",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    value: Provider.of<ReaderConfigProvider>(context)
-                        .comicSystemBrightness,
-                    onChanged: (e) {
-                      Provider.of<ReaderConfigProvider>(context, listen: false)
-                          .changeComicSystemBrightness(e);
-                    }),
-                !Provider.of<ReaderConfigProvider>(context)
-                        .comicSystemBrightness
-                    ? Row(
-                        children: <Widget>[
-                          SizedBox(width: 12),
-                          Icon(
-                            Icons.brightness_2,
-                            color: Colors.white,
-                            size: 18,
-                          ),
-                          Expanded(
-                              child: Slider(
-                                  value:
-                                      Provider.of<ReaderConfigProvider>(context)
-                                          .comicBrightness,
-                                  max: 1,
-                                  min: 0.01,
-                                  onChanged: (e) {
-                                    Screen.setBrightness(e);
-                                    Provider.of<ReaderConfigProvider>(context,
-                                            listen: false)
-                                        .changeBrightness(e);
-                                  })),
-                          Icon(Icons.brightness_5,
-                              color: Colors.white, size: 18),
-                          SizedBox(width: 12),
-                        ],
-                      )
-                    : Container(),
-                SwitchListTile(
-                    title: Text(
-                      "使用网页API",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    subtitle: Text(
-                      "网页部分单行本不分页",
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                    value:
-                        Provider.of<ReaderConfigProvider>(context).comicWebApi,
-                    onChanged: (e) {
-                      Provider.of<ReaderConfigProvider>(context, listen: false)
-                          .changeComicWebApi(e);
-                      loadData();
-                    }),
-                SwitchListTile(
-                    title: Text(
-                      "竖向阅读",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    value: Provider.of<ReaderConfigProvider>(context)
-                        .comicVerticalMode,
-                    onChanged: (e) {
-                      Provider.of<ReaderConfigProvider>(context, listen: false)
-                          .changeComicVertical(e);
-                      //Navigator.pop(context);
-                    }),
-                !Provider.of<ReaderConfigProvider>(context).comicVerticalMode
-                    ? SwitchListTile(
-                        title: Text(
-                          "日漫模式",
-                          style: TextStyle(color: Colors.white),
+              ),
+              SwitchListTile(
+                  title: Text(
+                    "使用系统亮度",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  value: Provider.of<ReaderConfigProvider>(context)
+                      .comicSystemBrightness,
+                  onChanged: (e) {
+                    Provider.of<ReaderConfigProvider>(context, listen: false)
+                        .changeComicSystemBrightness(e);
+                  }),
+              !Provider.of<ReaderConfigProvider>(context).comicSystemBrightness
+                  ? Row(
+                      children: <Widget>[
+                        SizedBox(width: 12),
+                        Icon(
+                          Icons.brightness_2,
+                          color: Colors.white,
+                          size: 18,
                         ),
-                        value: Provider.of<ReaderConfigProvider>(context)
-                            .comicReadReverse,
-                        onChanged: (e) {
-                          Provider.of<ReaderConfigProvider>(context,
-                                  listen: false)
-                              .changeReadReverse(e);
-                        })
-                    : Container(),
-                SwitchListTile(
-                    title: Text(
-                      "屏幕常亮",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    value: Provider.of<ReaderConfigProvider>(context)
-                        .comicWakelock,
-                    onChanged: (e) {
-                      Screen.keepOn(e);
-                      Provider.of<ReaderConfigProvider>(context, listen: false)
-                          .changeComicWakelock(e);
-                    }),
-                SwitchListTile(
-                    title: Text(
-                      "全屏阅读",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    value: Provider.of<ReaderConfigProvider>(context)
-                        .comicReadShowStatusBar,
-                    onChanged: (e) {
-                      Provider.of<ReaderConfigProvider>(context, listen: false)
-                          .changeComicReadShowStatusBar(e);
-                      SystemChrome.setEnabledSystemUIOverlays(
-                          e ? [] : SystemUiOverlay.values);
-                    }),
-                SwitchListTile(
-                    title: Text(
-                      "显示状态信息",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    value: Provider.of<ReaderConfigProvider>(context)
-                        .comicReadShowstate,
-                    onChanged: (e) {
-                      Provider.of<ReaderConfigProvider>(context, listen: false)
-                          .changeComicReadShowState(e);
-                    }),
-                // SwitchListTile(
-                //     title: Text(
-                //       "音量键翻页",
-                //       style: TextStyle(color: Colors.white),
-                //     ),
-                //     value: Provider.of<ReaderConfigProvider>(context)
-                //         .volumekeyListen,
-                //     onChanged: (e) {
-                //       Provider.of<ReaderConfigProvider>(context, listen: false)
-                //           .changeVolumekeyListen(e);
-                //       print(Provider.of<ReaderConfigProvider>(context,
-                //               listen: false)
-                //           .volumekeyListen
-                //           .toString());
-                //     }),
-              ],
-            ),
+                        Expanded(
+                            child: Slider(
+                                value:
+                                    Provider.of<ReaderConfigProvider>(context)
+                                        .comicBrightness,
+                                max: 1,
+                                min: 0.01,
+                                onChanged: (e) {
+                                  Screen.setBrightness(e);
+                                  Provider.of<ReaderConfigProvider>(context,
+                                          listen: false)
+                                      .changeBrightness(e);
+                                })),
+                        Icon(Icons.brightness_5, color: Colors.white, size: 18),
+                        SizedBox(width: 12),
+                      ],
+                    )
+                  : Container(),
+              SwitchListTile(
+                  title: Text(
+                    "使用网页API",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  subtitle: Text(
+                    "网页部分单行本不分页",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  value: Provider.of<ReaderConfigProvider>(context).comicWebApi,
+                  onChanged: (e) {
+                    Provider.of<ReaderConfigProvider>(context, listen: false)
+                        .changeComicWebApi(e);
+                    loadData();
+                  }),
+              SwitchListTile(
+                  title: Text(
+                    "竖向阅读",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  value: Provider.of<ReaderConfigProvider>(context)
+                      .comicVerticalMode,
+                  onChanged: (e) {
+                    Provider.of<ReaderConfigProvider>(context, listen: false)
+                        .changeComicVertical(e);
+                    //Navigator.pop(context);
+                  }),
+              !Provider.of<ReaderConfigProvider>(context).comicVerticalMode
+                  ? SwitchListTile(
+                      title: Text(
+                        "日漫模式",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      value: Provider.of<ReaderConfigProvider>(context)
+                          .comicReadReverse,
+                      onChanged: (e) {
+                        Provider.of<ReaderConfigProvider>(context,
+                                listen: false)
+                            .changeReadReverse(e);
+                      })
+                  : Container(),
+              SwitchListTile(
+                  title: Text(
+                    "屏幕常亮",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  value:
+                      Provider.of<ReaderConfigProvider>(context).comicWakelock,
+                  onChanged: (e) {
+                    Screen.keepOn(e);
+                    Provider.of<ReaderConfigProvider>(context, listen: false)
+                        .changeComicWakelock(e);
+                  }),
+              SwitchListTile(
+                  title: Text(
+                    "全屏阅读",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  value: Provider.of<ReaderConfigProvider>(context)
+                      .comicReadShowStatusBar,
+                  onChanged: (e) {
+                    Provider.of<ReaderConfigProvider>(context, listen: false)
+                        .changeComicReadShowStatusBar(e);
+                    SystemChrome.setEnabledSystemUIOverlays(
+                        e ? [] : SystemUiOverlay.values);
+                  }),
+              SwitchListTile(
+                  title: Text(
+                    "显示状态信息",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  value: Provider.of<ReaderConfigProvider>(context)
+                      .comicReadShowstate,
+                  onChanged: (e) {
+                    Provider.of<ReaderConfigProvider>(context, listen: false)
+                        .changeComicReadShowState(e);
+                  }),
+              // SwitchListTile(
+              //     title: Text(
+              //       "音量键翻页",
+              //       style: TextStyle(color: Colors.white),
+              //     ),
+              //     value: Provider.of<ReaderConfigProvider>(context)
+              //         .volumekeyListen,
+              //     onChanged: (e) {
+              //       Provider.of<ReaderConfigProvider>(context, listen: false)
+              //           .changeVolumekeyListen(e);
+              //       print(Provider.of<ReaderConfigProvider>(context,
+              //               listen: false)
+              //           .volumekeyListen
+              //           .toString());
+              //     }),
+            ],
           ),
         );
       },
