@@ -38,6 +38,7 @@ class _ComicChapterViewState extends State<ComicChapterView>
             itemCount: widget.detail.chapters.length,
             itemBuilder: (ctx, i) {
               var f = widget.detail.chapters[i];
+              dataReverse(f);
               return Container(
                 padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
                 width: double.infinity,
@@ -60,14 +61,8 @@ class _ComicChapterViewState extends State<ComicChapterView>
                         InkWell(
                           onTap: () {
                             setState(() {
-                              if (f.desc) {
-                                f.data.sort((x, y) =>
-                                    x.chapter_order.compareTo(y.chapter_order));
-                              } else {
-                                f.data.sort((x, y) =>
-                                    y.chapter_order.compareTo(x.chapter_order));
-                              }
                               f.desc = !f.desc;
+                              dataReverse(f);
                             });
                           },
                           child: Container(
@@ -132,6 +127,14 @@ class _ComicChapterViewState extends State<ComicChapterView>
               child: Text("岂可修！竟然没有可以看的章节！"),
             ),
           );
+  }
+
+  void dataReverse(ComicDetailChapter f) {
+    if (!f.desc) {
+      f.data.sort((x, y) => x.chapter_order.compareTo(y.chapter_order));
+    } else {
+      f.data.sort((x, y) => y.chapter_order.compareTo(x.chapter_order));
+    }
   }
 
   void openRead() async {
