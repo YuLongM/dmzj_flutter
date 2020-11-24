@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dmzj/database/app_theme_provider.dart';
 import 'package:flutter_dmzj/provider/user_info_provider.dart';
 import 'package:flutter_dmzj/helper/utils.dart';
-import 'package:flutter_dmzj/views/download/local_comic.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+// import 'package:flutter_dmzj/views/download/local_comic.dart';
 import 'package:provider/provider.dart';
 
 class PersonalPage extends StatefulWidget {
@@ -140,13 +141,14 @@ class _PersonalPageState extends State<PersonalPage> {
                                 Icon(Icons.chevron_right, color: Colors.grey),
                             leading: Icon(Icons.file_download),
                             onTap: () => {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (BuildContext context) =>
-                                      LocalComicPage(),
-                                ),
-                              )
+                              // Navigator.push(
+                              //   context,
+                              //   MaterialPageRoute(
+                              //     builder: (BuildContext context) =>
+                              //         LocalComicPage(),
+                              //   ),
+                              // )
+                              Fluttertoast.showToast(msg: '敬请期待')
                             },
                           )
                         ],
@@ -164,7 +166,8 @@ class _PersonalPageState extends State<PersonalPage> {
                           Provider.of<AppThemeProvider>(context, listen: false)
                               .changeSysDark(value);
                           if (!value) {
-                            Provider.of<AppThemeProvider>(context, listen: false)
+                            Provider.of<AppThemeProvider>(context,
+                                    listen: false)
                                 .changeDark(value);
                           }
                         },
@@ -179,7 +182,8 @@ class _PersonalPageState extends State<PersonalPage> {
                         color: Theme.of(context).cardColor,
                         child: SwitchListTile(
                           onChanged: (value) {
-                            Provider.of<AppThemeProvider>(context, listen: false)
+                            Provider.of<AppThemeProvider>(context,
+                                    listen: false)
                                 .changeDark(value);
                           },
                           secondary: Icon(Icons.brightness_4),
@@ -197,10 +201,11 @@ class _PersonalPageState extends State<PersonalPage> {
                         trailing: Padding(
                           padding: EdgeInsets.all(8),
                           child: Text(
-                            Provider.of<AppThemeProvider>(context).themeColorName,
+                            Provider.of<AppThemeProvider>(context)
+                                .themeColorName,
                             style: TextStyle(
-                                color:
-                                    Provider.of<AppThemeProvider>(context).themeColor,
+                                color: Provider.of<AppThemeProvider>(context)
+                                    .themeColor,
                                 fontSize: 14.0),
                           ),
                         ),
@@ -257,7 +262,8 @@ class _PersonalPageState extends State<PersonalPage> {
                           new FlatButton(
                             child: new Text("确定"),
                             onPressed: () {
-                              Provider.of<AppUserInfoProvider>(context, listen: false)
+                              Provider.of<AppUserInfoProvider>(context,
+                                      listen: false)
                                   .logout();
                               Navigator.of(context).pop();
                             },
@@ -274,7 +280,9 @@ class _PersonalPageState extends State<PersonalPage> {
                   child: CircleAvatar(
                     radius: 32,
                     backgroundImage: Utils.createCachedImageProvider(
-                        Provider.of<AppUserInfoProvider>(context).loginInfo.photo),
+                        Provider.of<AppUserInfoProvider>(context)
+                            .loginInfo
+                            .photo),
                   ),
                 ),
                 SizedBox(
@@ -289,7 +297,9 @@ class _PersonalPageState extends State<PersonalPage> {
                   height: 8,
                 ),
                 Text(
-                  Provider.of<AppUserInfoProvider>(context).userProfile?.description ??
+                  Provider.of<AppUserInfoProvider>(context)
+                          .userProfile
+                          ?.description ??
                       "",
                   style: TextStyle(color: Colors.white, fontSize: 12),
                 ),
@@ -342,7 +352,8 @@ class _PersonalPageState extends State<PersonalPage> {
                           new FlatButton(
                             child: new Text("确定"),
                             onPressed: () {
-                              Provider.of<AppUserInfoProvider>(context, listen: false)
+                              Provider.of<AppUserInfoProvider>(context,
+                                      listen: false)
                                   .logout();
                               Navigator.of(context).pop();
                             },

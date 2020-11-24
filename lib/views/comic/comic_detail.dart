@@ -14,7 +14,7 @@ import 'package:flutter_dmzj/helper/utils.dart';
 import 'package:flutter_dmzj/models/comic/comic_detail_model.dart';
 import 'package:flutter_dmzj/models/comic/comic_related_model.dart';
 import 'package:flutter_dmzj/database/comic_history.dart';
-import 'package:flutter_dmzj/views/download/comic_download.dart';
+// import 'package:flutter_dmzj/views/download/comic_download.dart';
 import 'package:flutter_dmzj/views/other/comment_widget.dart';
 import 'package:flutter_dmzj/widgets/comic_chapter_widget.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -87,15 +87,16 @@ class _ComicDetailPageState extends State<ComicDetailPage>
                     title: (_detail != null) ? Text(_detail.title) : Text(""),
                     actions: (_detail != null)
                         ? <Widget>[
-                            IconButton(
-                                icon: Icon(Icons.cloud_download),
-                                onPressed: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (BuildContext context) =>
-                                              ComicDownloadPage(_detail)));
-                                }),
+                            //屏蔽下载功能
+                            // IconButton(
+                            //     icon: Icon(Icons.cloud_download),
+                            //     onPressed: () {
+                            //       Navigator.push(
+                            //           context,
+                            //           MaterialPageRoute(
+                            //               builder: (BuildContext context) =>
+                            //                   ComicDownloadPage(_detail)));
+                            //     }),
                             Provider.of<AppUserInfoProvider>(context).isLogin &&
                                     _isSubscribe
                                 ? IconButton(
@@ -123,33 +124,12 @@ class _ComicDetailPageState extends State<ComicDetailPage>
                                         });
                                       }
                                     }),
-                            PopupMenuButton<String>(
-                              itemBuilder: (e) => [
-                                PopupMenuItem<String>(
-                                    value: 'download', child: new Text('下载')),
-                                PopupMenuItem<String>(
-                                    value: 'share', child: new Text('分享漫画')),
-                              ],
-                              icon: Icon(Icons.more_vert),
-                              onSelected: (e) {
-                                if (e == "share") {
+                            IconButton(
+                                icon: Icon(Icons.share),
+                                onPressed: () {
                                   Share.share(
                                       "${_detail.title}\r\nhttp://m.dmzj.com/info/${_detail.comic_py}.html");
-                                } else {
-                                  if (_detail == null ||
-                                      _detail.chapters == null ||
-                                      _detail.chapters.length == 0) {
-                                    Fluttertoast.showToast(msg: '没有可以下载的章节');
-                                    return;
-                                  }
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (BuildContext context) =>
-                                              ComicDownloadPage(_detail)));
-                                }
-                              },
-                            )
+                                }),
                           ]
                         : null,
                     flexibleSpace: FlexibleSpaceBar(
@@ -648,8 +628,11 @@ class _ComicDetailPageState extends State<ComicDetailPage>
       if (!ConfigHelper.getUserIsLogined() ?? false) {
         return;
       }
-      var response = await http.get(Api.comicCheckSubscribe(widget.comicId,
-          Provider.of<AppUserInfoProvider>(context, listen: false).loginInfo.uid));
+      var response = await http.get(Api.comicCheckSubscribe(
+          widget.comicId,
+          Provider.of<AppUserInfoProvider>(context, listen: false)
+              .loginInfo
+              .uid));
       var jsonMap = jsonDecode(response.body);
       setState(() {
         _isSubscribe = jsonMap["code"] == 0;
