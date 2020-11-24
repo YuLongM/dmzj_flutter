@@ -321,13 +321,6 @@ class Utils {
                   ],
                 ),
               ),
-              Center(
-                child: IconButton(
-                    icon: Icon(Icons.favorite_border),
-                    onPressed: () {
-                      UserHelper.comicSubscribe(id);
-                    }),
-              )
             ],
           ),
         ),
