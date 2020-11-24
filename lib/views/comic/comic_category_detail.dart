@@ -247,13 +247,13 @@ class _ComicCategoryDetailPageState extends State<ComicCategoryDetailPage>
   bool _loading = false;
 
   Future loadData() async {
+    if (_loading) {
+      return;
+    }
+    setState(() {
+      _loading = true;
+    });
     try {
-      if (_loading) {
-        return;
-      }
-      setState(() {
-        _loading = true;
-      });
       var response = await http.get(Api.comicCategoryDetail(
           _fiters.map((f) => f.item.tag_id).toList(),
           sort: _sort,
