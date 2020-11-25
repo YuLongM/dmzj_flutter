@@ -20,7 +20,6 @@ class _ComicDownloadPageState extends State<ComicDownloadPage> {
   List<ComicDetailChapterItem> _ls = [];
   DefaultCacheManager _cacheManager = DefaultCacheManager();
   ComicDownloader _downloader;
-  DownloadItem downloadItem;
   List<bool> downloadingState = [];
   List<bool> deleteState = [];
   double _progress;
@@ -44,8 +43,8 @@ class _ComicDownloadPageState extends State<ComicDownloadPage> {
         _progress = event;
       });
     });
-    downloadItem = DownloadItem(
-        widget.detail.id, widget.detail.title, widget.detail.cover);
+    // downloadItem = new DownloadItem(
+    //     widget.detail.id, widget.detail.title, widget.detail.cover);
   }
 
   @override
@@ -145,6 +144,8 @@ class _ComicDownloadPageState extends State<ComicDownloadPage> {
             //     });
             //   }
             // }
+            DownloadItem downloadItem = new DownloadItem(
+                widget.detail.id, widget.detail.title, widget.detail.cover);
             for (int i = 0; i < _ls.length; i++) {
               if (_ls[i].selected) {
                 // setState(() {

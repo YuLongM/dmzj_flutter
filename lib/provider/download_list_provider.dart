@@ -9,11 +9,11 @@ class ListChapterItem {
 }
 
 class DownloadItem {
-  static int _itemId;
+  int _itemId;
   int get itemId => _itemId;
-  static String _itemName;
+  String _itemName;
   String get itemName => _itemName;
-  static String _coverUrl;
+  String _coverUrl;
   String get coverUrl => _coverUrl;
   List<ListChapterItem> _listChapters = [];
   List<ListChapterItem> get listChapters => _listChapters;
@@ -70,6 +70,7 @@ class DownloadList extends ChangeNotifier {
   void insertDownload(DownloadItem item) {
     int i =
         _downloadQueue.indexWhere((element) => element.itemId == item.itemId);
+    print(i);
     switch (i) {
       case -1:
         _downloadQueue.add(item);

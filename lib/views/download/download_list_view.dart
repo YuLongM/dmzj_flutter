@@ -15,7 +15,8 @@ class DownloadListView extends StatelessWidget {
           itemCount: Provider.of<DownloadList>(context).downloadList.length,
           itemBuilder: (context, index) {
             DownloadItem item =
-                Provider.of<DownloadList>(context).downloadList[index];
+                Provider.of<DownloadList>(context, listen: false)
+                    .downloadList[index];
             return Utils.createDetailWidget(
                 item.itemId, 1, item.coverUrl, item.itemName, context);
           }),
