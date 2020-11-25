@@ -14,7 +14,7 @@ import 'package:flutter_dmzj/helper/utils.dart';
 import 'package:flutter_dmzj/models/comic/comic_detail_model.dart';
 import 'package:flutter_dmzj/models/comic/comic_related_model.dart';
 import 'package:flutter_dmzj/database/comic_history.dart';
-// import 'package:flutter_dmzj/views/download/comic_download.dart';
+import 'package:flutter_dmzj/views/download/comic_download.dart';
 import 'package:flutter_dmzj/views/other/comment_widget.dart';
 import 'package:flutter_dmzj/widgets/comic_chapter_widget.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -85,15 +85,15 @@ class _ComicDetailPageState extends State<ComicDetailPage>
                     actions: (_detail != null)
                         ? <Widget>[
                             //屏蔽下载功能
-                            // IconButton(
-                            //     icon: Icon(Icons.cloud_download),
-                            //     onPressed: () {
-                            //       Navigator.push(
-                            //           context,
-                            //           MaterialPageRoute(
-                            //               builder: (BuildContext context) =>
-                            //                   ComicDownloadPage(_detail)));
-                            //     }),
+                            IconButton(
+                                icon: Icon(Icons.cloud_download),
+                                onPressed: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (BuildContext context) =>
+                                              ComicDownloadPage(_detail)));
+                                }),
                             Provider.of<AppUserInfoProvider>(context).isLogin &&
                                     _isSubscribe
                                 ? IconButton(

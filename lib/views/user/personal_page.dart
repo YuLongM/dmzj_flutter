@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dmzj/database/app_theme_provider.dart';
 import 'package:flutter_dmzj/provider/user_info_provider.dart';
 import 'package:flutter_dmzj/helper/utils.dart';
+import 'package:flutter_dmzj/views/download/download_list_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 // import 'package:flutter_dmzj/views/download/local_comic.dart';
 import 'package:provider/provider.dart';
@@ -148,6 +149,12 @@ class _PersonalPageState extends State<PersonalPage> {
                               //         LocalComicPage(),
                               //   ),
                               // )
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (BuildContext context) =>
+                                        DownloadListView()),
+                              ),
                               Fluttertoast.showToast(msg: '敬请期待')
                             },
                           )

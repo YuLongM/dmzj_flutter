@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dmzj/provider/download_list_provider.dart';
 import 'package:flutter_dmzj/provider/reader_config_provider.dart';
 import 'package:flutter_dmzj/helper/config_helper.dart';
 import 'package:flutter_dmzj/database/comic_down.dart';
@@ -42,7 +43,8 @@ void main() async {
 
   runApp(MultiProvider(
     providers: [
-      ChangeNotifierProvider<AppThemeProvider>(create: (_) => AppThemeProvider(), lazy: false),
+      ChangeNotifierProvider<AppThemeProvider>(
+          create: (_) => AppThemeProvider(), lazy: false),
       ChangeNotifierProvider<AppUserInfoProvider>(
           create: (_) => AppUserInfoProvider(), lazy: false),
       ChangeNotifierProvider<ReaderConfigProvider>(
@@ -51,6 +53,10 @@ void main() async {
         create: (_) => ComicHistoryProvider(),
         lazy: false,
       ),
+      ChangeNotifierProvider(
+        create: (_) => DownloadList(),
+        lazy: false,
+      )
     ],
     child: ExcludeSemantics(
       child: MyApp(),
@@ -113,7 +119,8 @@ class MyApp extends StatelessWidget {
             : Brightness.light,
         primarySwatch: Provider.of<AppThemeProvider>(context).themeColor,
         accentColor: Provider.of<AppThemeProvider>(context).themeColor,
-        toggleableActiveColor: Provider.of<AppThemeProvider>(context).themeColor,
+        toggleableActiveColor:
+            Provider.of<AppThemeProvider>(context).themeColor,
         textSelectionColor: Provider.of<AppThemeProvider>(context).themeColor,
       ),
       darkTheme: (Provider.of<AppThemeProvider>(context).sysDark)
@@ -121,8 +128,10 @@ class MyApp extends StatelessWidget {
               brightness: Brightness.dark,
               primarySwatch: Provider.of<AppThemeProvider>(context).themeColor,
               accentColor: Provider.of<AppThemeProvider>(context).themeColor,
-              toggleableActiveColor: Provider.of<AppThemeProvider>(context).themeColor,
-              textSelectionColor: Provider.of<AppThemeProvider>(context).themeColor,
+              toggleableActiveColor:
+                  Provider.of<AppThemeProvider>(context).themeColor,
+              textSelectionColor:
+                  Provider.of<AppThemeProvider>(context).themeColor,
             )
           : null,
       home: MyHomePage(),
@@ -161,7 +170,8 @@ class _MyHomePageState extends State<MyHomePage>
     final QuickActions quickActions = QuickActions();
     quickActions.initialize((String shortcutType) {
       int type = int.parse(shortcutType);
-      if (!Provider.of<AppUserInfoProvider>(context, listen: false).isLogin) type = 0;
+      if (!Provider.of<AppUserInfoProvider>(context, listen: false).isLogin)
+        type = 0;
       print(type);
       switch (type) {
         case 1:
@@ -208,81 +218,105 @@ class _MyHomePageState extends State<MyHomePage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.shifting,
-        currentIndex: _index,
-        unselectedItemColor: Theme.of(context).disabledColor,
-        selectedItemColor: Theme.of(context).accentColor,
-        onTap: (index) {
+    return WillPopScope(
+      onWillPop: () {
+        if (_index != 0) {
           setState(() {
-            if (index == 1 && newsPage == null) {
-              newsPage = NewsHomePage();
-              pages[1] = newsPage;
-            }
-            if (index == 2 && novelPage == null) {
-              novelPage = NovelHomePage();
-              pages[2] = novelPage;
-            }
-            _index = index;
+            _index = 0;
           });
-        },
-        items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            label: "漫画",
-            icon: Icon(Icons.photo_album),
-          ),
-          BottomNavigationBarItem(
-            label: "新闻",
-            icon: Icon(Icons.article),
-          ),
-          BottomNavigationBarItem(
-            label: "轻小说",
-            icon: Icon(Icons.book),
-          ),
-          BottomNavigationBarItem(
-            label: "我的",
-            icon: Icon(Icons.account_circle),
-          ),
-        ],
+          return Future.value(false);
+        }
+        return doubleClickBack();
+      },
+      child: Scaffold(
+        bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.shifting,
+          currentIndex: _index,
+          unselectedItemColor: Theme.of(context).disabledColor,
+          selectedItemColor: Theme.of(context).accentColor,
+          onTap: (index) {
+            setState(() {
+              if (index == 1 && newsPage == null) {
+                newsPage = NewsHomePage();
+                pages[1] = newsPage;
+              }
+              if (index == 2 && novelPage == null) {
+                novelPage = NovelHomePage();
+                pages[2] = novelPage;
+              }
+              _index = index;
+            });
+          },
+          items: <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              label: "漫画",
+              icon: Icon(Icons.photo_album),
+            ),
+            BottomNavigationBarItem(
+              label: "新闻",
+              icon: Icon(Icons.article),
+            ),
+            BottomNavigationBarItem(
+              label: "轻小说",
+              icon: Icon(Icons.book),
+            ),
+            BottomNavigationBarItem(
+              label: "我的",
+              icon: Icon(Icons.account_circle),
+            ),
+          ],
+        ),
+        body: Row(
+          children: <Widget>[
+            // NavigationRail(
+            //   backgroundColor: Theme.of(context).bottomAppBarColor,
+            //     onDestinationSelected: (int index) {
+            //       setState(() {
+            //         _index = index;
+            //       });
+            //     },
+            //     labelType: NavigationRailLabelType.all,
+            //     destinations: [
+            //       NavigationRailDestination(
+            //         icon: Icon(Icons.library_books),
+            //         label: Text('漫画'),
+            //       ),
+            //       NavigationRailDestination(
+            //         icon: Icon(Icons.whatshot),
+            //         label: Text('新闻'),
+            //       ),
+            //       NavigationRailDestination(
+            //         icon: Icon(Icons.book),
+            //         label: Text('轻小说'),
+            //       ),
+            //       NavigationRailDestination(
+            //         icon: Icon(Icons.account_circle),
+            //         label: Text('我的'),
+            //       ),
+            //     ],
+            //     selectedIndex: _index),
+            // VerticalDivider(thickness: 1, width: 1),
+            Expanded(
+                child: IndexedStack(
+              index: _index,
+              children: pages,
+            ))
+          ],
+        ), // This trailing comma makes auto-formatting nicer for build methods.
       ),
-      body: Row(
-        children: <Widget>[
-          // NavigationRail(
-          //   backgroundColor: Theme.of(context).bottomAppBarColor,
-          //     onDestinationSelected: (int index) {
-          //       setState(() {
-          //         _index = index;
-          //       });
-          //     },
-          //     labelType: NavigationRailLabelType.all,
-          //     destinations: [
-          //       NavigationRailDestination(
-          //         icon: Icon(Icons.library_books),
-          //         label: Text('漫画'),
-          //       ),
-          //       NavigationRailDestination(
-          //         icon: Icon(Icons.whatshot),
-          //         label: Text('新闻'),
-          //       ),
-          //       NavigationRailDestination(
-          //         icon: Icon(Icons.book),
-          //         label: Text('轻小说'),
-          //       ),
-          //       NavigationRailDestination(
-          //         icon: Icon(Icons.account_circle),
-          //         label: Text('我的'),
-          //       ),
-          //     ],
-          //     selectedIndex: _index),
-          // VerticalDivider(thickness: 1, width: 1),
-          Expanded(
-              child: IndexedStack(
-            index: _index,
-            children: pages,
-          ))
-        ],
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+  int last = 0;
+
+  Future<bool> doubleClickBack() {
+    int now = DateTime.now().millisecondsSinceEpoch;
+    if (now - last > 1000) {
+      last = DateTime.now().millisecondsSinceEpoch;
+      Fluttertoast.showToast(msg: '双击返回退出');
+      return Future.value(false);
+    } else {
+      return Future.value(true);
+    }
   }
 }

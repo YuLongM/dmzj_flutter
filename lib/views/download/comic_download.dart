@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_dmzj/helper/utils.dart';
 import 'package:flutter_dmzj/models/comic/comic_detail_model.dart';
+import 'package:flutter_dmzj/provider/download_list_provider.dart';
 import 'package:flutter_dmzj/views/download/downloader.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:provider/provider.dart';
 
 class ComicDownloadPage extends StatefulWidget {
   final ComicDetail detail;
@@ -18,6 +20,7 @@ class _ComicDownloadPageState extends State<ComicDownloadPage> {
   List<ComicDetailChapterItem> _ls = [];
   DefaultCacheManager _cacheManager = DefaultCacheManager();
   ComicDownloader _downloader;
+  DownloadItem downloadItem;
   List<bool> downloadingState = [];
   List<bool> deleteState = [];
   double _progress;
@@ -41,6 +44,8 @@ class _ComicDownloadPageState extends State<ComicDownloadPage> {
         _progress = event;
       });
     });
+    downloadItem = DownloadItem(
+        widget.detail.id, widget.detail.title, widget.detail.cover);
   }
 
   @override
@@ -126,20 +131,45 @@ class _ComicDownloadPageState extends State<ComicDownloadPage> {
             //comic-version(连载)-chapter
             //在文件夹中下载
             //或者使用缓存器直接缓存
+            // for (int i = 0; i < _ls.length; i++) {
+            //   if (_ls[i].selected) {
+            //     setState(() {
+            //       downloadingState[i] = true;
+            //     });
+            //     await _downloader.startDownload(_ls[i]).whenComplete(() {
+            //       setState(() {
+            //         _ls[i].downloaded = true;
+            //         _ls[i].selected = false;
+            //         downloadingState[i] = false;
+            //       });
+            //     });
+            //   }
+            // }
             for (int i = 0; i < _ls.length; i++) {
               if (_ls[i].selected) {
-                setState(() {
-                  downloadingState[i] = true;
-                });
-                await _downloader.startDownload(_ls[i]).whenComplete(() {
-                  setState(() {
-                    _ls[i].downloaded = true;
-                    _ls[i].selected = false;
-                    downloadingState[i] = false;
-                  });
-                });
+                // setState(() {
+                //   downloadingState[i] = true;
+                // });
+                // await _downloader.startDownload(_ls[i]).whenComplete(() {
+                //   setState(() {
+                //     _ls[i].downloaded = true;
+                //     _ls[i].selected = false;
+                //     downloadingState[i] = false;
+                //   });
+                // });
+                ListChapterItem item = ListChapterItem(_ls[i].chapter_id,
+                    _ls[i].chapter_title, _ls[i].chapter_order);
+                downloadItem.insertChapter(item);
               }
             }
+            downloadItem.sortList();
+            print(widget.detail.cover);
+            Provider.of<DownloadList>(context, listen: false)
+                .insertDownload(downloadItem);
+            print(downloadItem.coverUrl);
+            print(Provider.of<DownloadList>(context, listen: false)
+                .downloadList
+                .length);
           },
         ),
         secondChild: FloatingActionButton(
