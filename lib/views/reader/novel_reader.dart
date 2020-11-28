@@ -514,7 +514,6 @@ class _NovelReaderPageState extends State<NovelReaderPage> {
                                 if (f != _currentItem) {
                                   setState(() {
                                     _currentItem = f;
-                                    _showControls = false;
                                   });
                                   _chapterScroll.animateTo(getOffset(),
                                       duration: Duration(milliseconds: 200),

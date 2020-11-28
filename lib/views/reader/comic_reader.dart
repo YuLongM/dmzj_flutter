@@ -181,7 +181,6 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
 
   @override
   Widget build(BuildContext context) {
-    _chapterScroll = getChapterScroll();
     return Scaffold(
       extendBodyBehindAppBar: true,
       backgroundColor: Colors.black,
@@ -383,6 +382,9 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
                                       onTap: openSetting),
                                   createButton("章节", Icons.format_list_bulleted,
                                       onTap: () {
+                                    setState(() {
+                                      _chapterScroll = getChapterScroll();
+                                    });
                                     Scaffold.of(context).openEndDrawer();
                                   }),
                                   createButton("下一话", Icons.fast_forward,
