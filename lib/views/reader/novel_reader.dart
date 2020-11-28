@@ -21,6 +21,7 @@ import 'package:flutter_easyrefresh/material_header.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:provider/provider.dart';
+import 'package:share/share.dart';
 
 class NovelReaderPage extends StatefulWidget {
   final int novelId;
@@ -109,9 +110,9 @@ class _NovelReaderPageState extends State<NovelReaderPage> {
   }
 
   bool _showControls = false;
-  bool _showChapters = false;
   PageController _controller = PageController(initialPage: 1);
   ScrollController _controllerVer = ScrollController();
+  ScrollController _chapterScroll = ScrollController();
   int _indexPage = 1;
   bool _isPicture = false;
 
@@ -120,471 +121,450 @@ class _NovelReaderPageState extends State<NovelReaderPage> {
     return Scaffold(
       backgroundColor: ReaderConfigProvider
           .bgColors[Provider.of<ReaderConfigProvider>(context).novelReadTheme],
-      body: Stack(
-        children: <Widget>[
-          InkWell(
-            hoverColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            splashColor: Colors.transparent,
-            onTap: () {
-              setState(() {
-                if (_showChapters) {
-                  _showChapters = false;
-                  return;
-                }
-                _showControls = !_showControls;
-              });
-            },
-            child: Provider.of<ReaderConfigProvider>(context)
-                        .novelReadDirection !=
-                    2
-                ? PageView.builder(
-                    scrollDirection: Axis.horizontal,
-                    pageSnapping: Provider.of<ReaderConfigProvider>(context)
-                            .novelReadDirection !=
-                        2,
-                    controller: _controller,
-                    itemCount: _pageContents.length + 2,
-                    reverse: Provider.of<ReaderConfigProvider>(context)
-                            .novelReadDirection ==
-                        1,
-                    onPageChanged: (i) {
-                      if (i == _pageContents.length + 1 && !_loading) {
-                        nextChapter();
-                        return;
-                      }
-                      if (i == 0 && !_loading) {
-                        previousChapter();
-                        return;
-                      }
-                      if (i < _pageContents.length + 1) {
-                        setState(() {
-                          _indexPage = i;
-                        });
-                      }
+      body: Builder(
+        builder: (context) => Stack(
+          children: <Widget>[
+            InkWell(
+              hoverColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              splashColor: Colors.transparent,
+              onTap: () {
+                setState(() {
+                  _showControls = !_showControls;
+                });
+              },
+              child: Provider.of<ReaderConfigProvider>(context)
+                          .novelReadDirection !=
+                      2
+                  ? PageView.builder(
+                      scrollDirection: Axis.horizontal,
+                      controller: _controller,
+                      itemCount: _pageContents.length + 2,
+                      reverse: Provider.of<ReaderConfigProvider>(context)
+                              .novelReadDirection ==
+                          1,
+                      onPageChanged: (i) {
+                        if (i == _pageContents.length + 1 && !_loading) {
+                          nextChapter();
+                          return;
+                        }
+                        if (i == 0 && !_loading) {
+                          previousChapter();
+                          return;
+                        }
+                        if (i < _pageContents.length + 1) {
+                          setState(() {
+                            _indexPage = i;
+                          });
+                        }
 
-                      // setState(() {
-                      //   _indexPage = i;
-                      // });
-                    },
-                    itemBuilder: (ctx, i) {
-                      if (i == 0) {
-                        return Container(
-                          child: Center(
-                              child: Text("上一章",
-                                  style: TextStyle(color: Colors.grey))),
-                        );
-                      }
-                      if (i == _pageContents.length + 1) {
-                        return Container(
-                          child: Center(
-                              child: Text("下一章",
-                                  style: TextStyle(color: Colors.grey))),
-                        );
-                      }
+                        // setState(() {
+                        //   _indexPage = i;
+                        // });
+                      },
+                      itemBuilder: (ctx, i) {
+                        if (i == 0) {
+                          return Container(
+                            child: Center(
+                                child: Text("上一章",
+                                    style: TextStyle(color: Colors.grey))),
+                          );
+                        }
+                        if (i == _pageContents.length + 1) {
+                          return Container(
+                            child: Center(
+                                child: Text("下一章",
+                                    style: TextStyle(color: Colors.grey))),
+                          );
+                        }
 
-                      var _widget = _isPicture
-                          ? Container(
-                              color: ReaderConfigProvider.bgColors[
-                                  Provider.of<ReaderConfigProvider>(context)
-                                      .novelReadTheme],
-                              child: InkWell(
-                                onDoubleTap: () {
-                                  Utils.showImageViewDialog(
-                                      context,
-                                      _pageContents.length == 0
-                                          ? ""
-                                          : _pageContents[i - 1]);
-                                },
-                                onTap: () {
-                                  setState(() {
-                                    if (_showChapters) {
-                                      _showChapters = false;
-                                      return;
-                                    }
-                                    _showControls = !_showControls;
-                                  });
-                                },
-                                child: Utils.createCacheImage(
-                                    _pageContents[i - 1], 100, 100,
-                                    fit: BoxFit.fitWidth),
-                              ),
-                            )
-                          : Container(
-                              color: ReaderConfigProvider.bgColors[
-                                  Provider.of<ReaderConfigProvider>(context)
-                                      .novelReadTheme],
-                              padding: EdgeInsets.fromLTRB(12, 12, 12, 24),
-                              alignment: Alignment.topCenter,
-                              child: Text(
-                                _pageContents.length == 0
-                                    ? ""
-                                    : _pageContents[i - 1],
-                                style: TextStyle(
-                                    fontSize: _fontSize,
-                                    height: _lineHeight,
-                                    color: ReaderConfigProvider.fontColors[
-                                        Provider.of<ReaderConfigProvider>(
-                                                context)
-                                            .novelReadTheme]),
-                              ),
-                            );
-                      return _widget;
-                    },
-                  )
-                : EasyRefresh(
-                    onRefresh: () async {
-                      previousChapter();
-                    },
-                    onLoad: () async {
-                      nextChapter();
-                    },
-                    header: MaterialHeader(),
-                    footer: MaterialFooter(displacement: 80),
-                    child: SingleChildScrollView(
-                      controller: _controllerVer,
-                      child: _isPicture
-                          ? Column(
-                              children: _pageContents
-                                  .map((f) => InkWell(
-                                        onDoubleTap: () {
-                                          Utils.showImageViewDialog(context, f);
-                                        },
-                                        onTap: () {
-                                          setState(() {
-                                            if (_showChapters) {
-                                              _showChapters = false;
-                                              return;
-                                            }
-                                            _showControls = !_showControls;
-                                          });
-                                        },
-                                        child:
-                                            Utils.createCacheImage(f, 100, 100),
-                                      ))
-                                  .toList(),
-                            )
-                          : Container(
-                              alignment: Alignment.topCenter,
-                              constraints: BoxConstraints(
-                                minHeight: MediaQuery.of(context).size.height,
-                              ),
-                              color: ReaderConfigProvider.bgColors[
-                                  Provider.of<ReaderConfigProvider>(context)
-                                      .novelReadTheme],
-                              padding: EdgeInsets.fromLTRB(12, 12, 12, 24),
-                              child: Text(_pageContents.join(),
+                        var _widget = _isPicture
+                            ? Container(
+                                color: ReaderConfigProvider.bgColors[
+                                    Provider.of<ReaderConfigProvider>(context)
+                                        .novelReadTheme],
+                                child: InkWell(
+                                  onDoubleTap: () {
+                                    Utils.showImageViewDialog(
+                                        context,
+                                        _pageContents.length == 0
+                                            ? ""
+                                            : _pageContents[i - 1]);
+                                  },
+                                  onTap: () {
+                                    setState(() {
+                                      _showControls = !_showControls;
+                                    });
+                                  },
+                                  child: Utils.createCacheImage(
+                                      _pageContents[i - 1], 100, 100,
+                                      fit: BoxFit.fitWidth),
+                                ),
+                              )
+                            : Container(
+                                color: ReaderConfigProvider.bgColors[
+                                    Provider.of<ReaderConfigProvider>(context)
+                                        .novelReadTheme],
+                                padding: EdgeInsets.fromLTRB(12, 12, 12, 24),
+                                alignment: Alignment.topCenter,
+                                child: Text(
+                                  _pageContents.length == 0
+                                      ? ""
+                                      : _pageContents[i - 1],
                                   style: TextStyle(
                                       fontSize: _fontSize,
                                       height: _lineHeight,
                                       color: ReaderConfigProvider.fontColors[
                                           Provider.of<ReaderConfigProvider>(
                                                   context)
-                                              .novelReadTheme])),
-                            ),
-                    ),
-                  ),
-          ),
-          Provider.of<ReaderConfigProvider>(context).novelReadDirection == 2
-              ? Positioned(child: Container())
-              : Positioned(
-                  left: 0,
-                  width: 40,
-                  height: MediaQuery.of(context).size.height,
-                  child: InkWell(
-                    onTap: () {
-                      if (Provider.of<ReaderConfigProvider>(context,
-                                  listen: false)
-                              .novelReadDirection ==
-                          1) {
-                        previousPage();
-                      } else {
-                        nextPage();
-                      }
-                    },
-                    child: Container(),
-                  ),
-                ),
-          Provider.of<ReaderConfigProvider>(context).novelReadDirection == 2
-              ? Positioned(child: Container())
-              : Positioned(
-                  right: 0,
-                  width: 40,
-                  height: MediaQuery.of(context).size.height,
-                  child: InkWell(
-                    onTap: () {
-                      if (Provider.of<ReaderConfigProvider>(context,
-                                  listen: false)
-                              .novelReadDirection ==
-                          1) {
-                        nextPage();
-                      } else {
-                        previousPage();
-                      }
-                    },
-                    child: Container(),
-                  ),
-                ),
-
-          Positioned(
-            bottom: 8,
-            right: 12,
-            child: Text(
-              Provider.of<ReaderConfigProvider>(context).novelReadDirection == 2
-                  ? ""
-                  : "$_indexPage/${_pageContents.length} $_batteryStr电量",
-              style: TextStyle(color: Colors.grey, fontSize: 12),
-            ),
-          ),
-          //加载
-          Positioned(
-            top: 80,
-            width: MediaQuery.of(context).size.width,
-            child: _loading
-                ? Container(
-                    width: double.infinity,
-                    child: Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  )
-                : Container(),
-          ),
-
-          //顶部
-          AnimatedPositioned(
-            duration: Duration(milliseconds: 200),
-            width: MediaQuery.of(context).size.width,
-            child: Container(
-              padding: EdgeInsets.only(
-                  top: Provider.of<ReaderConfigProvider>(context)
-                          .comicReadShowStatusBar
-                      ? 0
-                      : MediaQuery.of(context).padding.top),
-              width: MediaQuery.of(context).size.width,
-              child: Material(
-                  color: Color.fromARGB(255, 34, 34, 34),
-                  child: ListTile(
-                    dense: true,
-                    title: Text(
-                      widget.novelTitle,
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    subtitle: Text(
-                      _currentItem.volume_name.trim() +
-                          " · " +
-                          _currentItem.chapter_name.trim(),
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    leading: BackButton(
-                      color: Colors.white,
-                    ),
-                    trailing: IconButton(
-                        icon: Icon(
-                          Icons.share,
-                          color: Colors.white,
-                        ),
-                        onPressed: () {}),
-                  )),
-            ),
-            top: _showControls ? 0 : -100,
-            left: 0,
-          ),
-          //底部
-          AnimatedPositioned(
-            duration: Duration(milliseconds: 200),
-            width: MediaQuery.of(context).size.width,
-            child: Container(
-              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-              width: MediaQuery.of(context).size.width,
-              color: Color.fromARGB(255, 34, 34, 34),
-              child: Column(
-                children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      ButtonTheme(
-                        minWidth: 10,
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                        child: FlatButton(
-                          onPressed: previousChapter,
-                          child: Text(
-                            "上一话",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: !_loading
-                            ? Provider.of<ReaderConfigProvider>(context)
-                                        .novelReadDirection ==
-                                    2
-                                ? Slider(
-                                    value: _verSliderValue,
-                                    max: _verSliderMax,
-                                    onChanged: (e) {
-                                      _controllerVer.jumpTo(e);
-                                    },
-                                  )
-                                : Slider(
-                                    value: _indexPage >= 1
-                                        ? _indexPage - 1.toDouble()
-                                        : 0,
-                                    max: _pageContents.length - 1.toDouble(),
-                                    onChanged: (e) {
-                                      setState(() {
-                                        _indexPage = e.toInt() + 1;
-                                        _controller.jumpToPage(e.toInt() + 1);
-                                      });
-                                    },
-                                  )
-                            : Text(
-                                "加载中",
-                                style: TextStyle(color: Colors.white),
+                                              .novelReadTheme]),
+                                ),
+                              );
+                        return _widget;
+                      },
+                    )
+                  : EasyRefresh(
+                      onRefresh: () async {
+                        previousChapter();
+                      },
+                      onLoad: () async {
+                        nextChapter();
+                      },
+                      header: MaterialHeader(),
+                      footer: MaterialFooter(displacement: 80),
+                      child: SingleChildScrollView(
+                        controller: _controllerVer,
+                        child: _isPicture
+                            ? Column(
+                                children: _pageContents
+                                    .map((f) => InkWell(
+                                          onDoubleTap: () {
+                                            Utils.showImageViewDialog(
+                                                context, f);
+                                          },
+                                          onTap: () {
+                                            setState(() {
+                                              _showControls = !_showControls;
+                                            });
+                                          },
+                                          child: Utils.createCacheImage(
+                                              f, 100, 100),
+                                        ))
+                                    .toList(),
+                              )
+                            : Container(
+                                alignment: Alignment.topCenter,
+                                constraints: BoxConstraints(
+                                  minHeight: MediaQuery.of(context).size.height,
+                                ),
+                                color: ReaderConfigProvider.bgColors[
+                                    Provider.of<ReaderConfigProvider>(context)
+                                        .novelReadTheme],
+                                padding: EdgeInsets.fromLTRB(12, 12, 12, 24),
+                                child: Text(_pageContents.join(),
+                                    style: TextStyle(
+                                        fontSize: _fontSize,
+                                        height: _lineHeight,
+                                        color: ReaderConfigProvider.fontColors[
+                                            Provider.of<ReaderConfigProvider>(
+                                                    context)
+                                                .novelReadTheme])),
                               ),
                       ),
-                      ButtonTheme(
-                        minWidth: 10,
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                        child: FlatButton(
-                          onPressed: nextChapter,
-                          child: Text(
-                            "下一话",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                  Row(
-                    children: <Widget>[
-                      Provider.of<AppUserInfoProvider>(context).isLogin &&
-                              widget.subscribe
-                          ? createButton(
-                              "已订阅",
-                              Icons.favorite,
-                              onTap: () async {
-                                if (await UserHelper.novelSubscribe(
-                                    widget.novelId,
-                                    cancel: true)) {
-                                  setState(() {
-                                    widget.subscribe = false;
-                                  });
-                                }
-                              },
-                            )
-                          : createButton(
-                              "订阅",
-                              Icons.favorite_border,
-                              onTap: () async {
-                                if (await UserHelper.novelSubscribe(
-                                    widget.novelId)) {
-                                  setState(() {
-                                    widget.subscribe = true;
-                                  });
-                                }
-                              },
-                            ),
-                      createButton("设置", Icons.settings, onTap: openSetting),
-                      createButton("章节", Icons.format_list_bulleted, onTap: () {
-                        setState(() {
-                          _showChapters = true;
-                        });
-                      }),
-                    ],
-                  ),
-                  SizedBox(height: 36)
-                ],
-              ),
+                    ),
             ),
-            bottom: _showControls ? 0 : -180,
-            left: 0,
-          ),
+            //左右翻页
+            Provider.of<ReaderConfigProvider>(context).novelReadDirection == 2
+                ? Positioned(child: Container())
+                : Positioned(
+                    left: 0,
+                    width: 40,
+                    height: MediaQuery.of(context).size.height,
+                    child: InkWell(
+                      onTap: () {
+                        if (Provider.of<ReaderConfigProvider>(context,
+                                    listen: false)
+                                .novelReadDirection ==
+                            1) {
+                          nextPage();
+                        } else {
+                          previousPage();
+                        }
+                      },
+                      child: Container(),
+                    ),
+                  ),
+            Provider.of<ReaderConfigProvider>(context).novelReadDirection == 2
+                ? Positioned(child: Container())
+                : Positioned(
+                    right: 0,
+                    width: 40,
+                    height: MediaQuery.of(context).size.height,
+                    child: InkWell(
+                      onTap: () {
+                        if (Provider.of<ReaderConfigProvider>(context,
+                                    listen: false)
+                                .novelReadDirection ==
+                            1) {
+                          previousPage();
+                        } else {
+                          nextPage();
+                        }
+                      },
+                      child: Container(),
+                    ),
+                  ),
 
-          //右侧章节选择
-          AnimatedPositioned(
-            duration: Duration(milliseconds: 200),
-            width: 200,
-            child: Container(
-                height: MediaQuery.of(context).size.height,
-                color: Color.fromARGB(255, 24, 24, 24),
-                padding: EdgeInsets.only(
-                    top: Provider.of<ReaderConfigProvider>(context)
-                            .comicReadShowStatusBar
-                        ? 0
-                        : MediaQuery.of(context).padding.top),
-                width: MediaQuery.of(context).size.width,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Padding(
-                        padding: EdgeInsets.all(8),
-                        child: Text(
-                          "目录(${widget.chapters.length})",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold),
-                        )),
-                    Expanded(
-                      child: ListView(
-                        children: widget.chapters
-                            .map((f) => ListTile(
-                                  dense: true,
-                                  onTap: () async {
-                                    if (f != _currentItem) {
-                                      setState(() {
-                                        _currentItem = f;
-                                        _showChapters = false;
-                                        _showControls = false;
-                                      });
+            Positioned(
+                bottom: 0,
+                right: 0,
+                child: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      Provider.of<ReaderConfigProvider>(context)
+                                  .novelReadDirection ==
+                              2
+                          ? ""
+                          : "$_indexPage/${_pageContents.length} $_batteryStr电量",
+                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                  ),
+                )),
+            //加载
+            Positioned(
+              top: 0,
+              width: MediaQuery.of(context).size.width,
+              child: _loading
+                  ? Container(
+                      height: MediaQuery.of(context).size.height,
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  : Container(),
+            ),
 
-                                      await loadData();
-                                    }
-                                  },
-                                  title: Text(
-                                    f.chapter_name,
-                                    style: TextStyle(
-                                        color: f == _currentItem
-                                            ? Theme.of(context).accentColor
-                                            : Colors.white),
-                                  ),
-                                  subtitle: Text(
-                                    f.volume_name,
-                                    style: TextStyle(color: Colors.grey),
-                                  ),
-                                ))
-                            .toList(),
+            //顶部
+            Positioned(
+              top: 0,
+              // height: kToolbarHeight,
+              width: MediaQuery.of(context).size.width,
+              child: AnimatedCrossFade(
+                  firstChild: AppBar(
+                    elevation: 0,
+                    backgroundColor:
+                        Color.fromARGB(255, 34, 34, 34).withOpacity(0.85),
+                    title: ListTile(
+                      dense: true,
+                      title: Text(
+                        widget.novelTitle,
+                        maxLines: 1,
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      subtitle: Text(
+                        _currentItem.chapter_name,
+                        maxLines: 1,
+                        style: TextStyle(color: Colors.white),
                       ),
                     ),
-                  ],
-                )),
-            top: 0,
-            right: _showChapters ? 0 : -200,
-          ),
-        ],
+                    actions: [
+                      IconButton(
+                          icon: Icon(
+                            Icons.share,
+                            color: Colors.white,
+                          ),
+                          onPressed: () {
+                            Share.share(
+                                '${widget.novelTitle}-${_currentItem.chapter_name}\r\nhttps://m.dmzj.com/view/${widget.novelId}/${_currentItem.chapter_id}.html');
+                          }),
+                    ],
+                  ),
+                  secondChild: Container(),
+                  crossFadeState: _showControls
+                      ? CrossFadeState.showFirst
+                      : CrossFadeState.showSecond,
+                  duration: Duration(milliseconds: 200)),
+            ),
+
+            //右侧章节选择
+            Positioned(
+              bottom: 0,
+              width: MediaQuery.of(context).size.width,
+              child: AnimatedCrossFade(
+                  firstChild: Container(
+                    padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                    width: MediaQuery.of(context).size.width,
+                    color: Color.fromARGB(255, 34, 34, 34).withOpacity(0.85),
+                    child: Column(
+                      children: <Widget>[
+                        Container(
+                          height: kTextTabBarHeight / 2,
+                          child: !_loading
+                              ? Provider.of<ReaderConfigProvider>(context)
+                                          .novelReadDirection ==
+                                      2
+                                  ? Slider(
+                                      value: _verSliderValue,
+                                      max: _verSliderMax,
+                                      onChanged: (e) {
+                                        _controllerVer.jumpTo(e);
+                                      },
+                                    )
+                                  : Slider(
+                                      value: _indexPage >= 1
+                                          ? _indexPage - 1.toDouble()
+                                          : 0,
+                                      max: _pageContents.length - 1.toDouble(),
+                                      onChanged: (e) {
+                                        setState(() {
+                                          _indexPage = e.toInt() + 1;
+                                          _controller.jumpToPage(e.toInt() + 1);
+                                        });
+                                      },
+                                    )
+                              : Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 24),
+                                  child: Center(
+                                    child: LinearProgressIndicator(),
+                                  ),
+                                ),
+                        ),
+                        Row(
+                          children: <Widget>[
+                            createButton("上一话", Icons.fast_rewind,
+                                onTap: previousChapter),
+                            Provider.of<AppUserInfoProvider>(context).isLogin &&
+                                    widget.subscribe
+                                ? createButton(
+                                    "已订阅",
+                                    Icons.favorite,
+                                    onTap: () async {
+                                      if (await UserHelper.novelSubscribe(
+                                          widget.novelId,
+                                          cancel: true)) {
+                                        setState(() {
+                                          widget.subscribe = false;
+                                        });
+                                      }
+                                    },
+                                  )
+                                : createButton(
+                                    "订阅",
+                                    Icons.favorite_border,
+                                    onTap: () async {
+                                      if (await UserHelper.novelSubscribe(
+                                          widget.novelId)) {
+                                        setState(() {
+                                          widget.subscribe = true;
+                                        });
+                                      }
+                                    },
+                                  ),
+                            createButton("设置", Icons.settings,
+                                onTap: openSetting),
+                            createButton("章节", Icons.format_list_bulleted,
+                                onTap: () {
+                              setState(() {
+                                _chapterScroll = getChapterScroll();
+                              });
+                              Scaffold.of(context).openEndDrawer();
+                            }),
+                            createButton("下一话", Icons.fast_forward,
+                                onTap: nextChapter),
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                  secondChild: Container(),
+                  crossFadeState: _showControls
+                      ? CrossFadeState.showFirst
+                      : CrossFadeState.showSecond,
+                  duration: Duration(milliseconds: 200)),
+            ),
+          ],
+        ),
+      ),
+      endDrawer: Drawer(
+        child: Container(
+            height: MediaQuery.of(context).size.height,
+            color: Color.fromARGB(255, 24, 24, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Padding(
+                    padding: EdgeInsets.all(8),
+                    child: Text(
+                      "目录(${widget.chapters.length})",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold),
+                    )),
+                Expanded(
+                  child: ListView(
+                    itemExtent: 80,
+                    padding: EdgeInsets.zero,
+                    controller: _chapterScroll,
+                    children: widget.chapters
+                        .map((f) => ListTile(
+                              dense: true,
+                              onTap: () async {
+                                if (f != _currentItem) {
+                                  setState(() {
+                                    _currentItem = f;
+                                    _showControls = false;
+                                  });
+                                  _chapterScroll.animateTo(getOffset(),
+                                      duration: Duration(milliseconds: 200),
+                                      curve: Curves.ease);
+
+                                  await loadData();
+                                }
+                              },
+                              title: Text(
+                                f.chapter_name,
+                                style: TextStyle(
+                                    color: f == _currentItem
+                                        ? Theme.of(context).accentColor
+                                        : Colors.white),
+                              ),
+                              subtitle: Text(
+                                f.volume_name,
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            ))
+                        .toList(),
+                  ),
+                ),
+              ],
+            )),
       ),
     );
   }
 
+  double getOffset() {
+    return (widget.chapters.indexOf(_currentItem) + 1) * 80 -
+        MediaQuery.of(context).size.height / 2;
+  }
+
+  ScrollController getChapterScroll() {
+    return ScrollController(initialScrollOffset: getOffset());
+  }
+
   void nextPage() {
-    if (_controller.page == 1) {
-      previousChapter();
-    } else {
-      setState(() {
-        _controller.jumpToPage(_indexPage - 1);
-      });
-    }
+    if (_indexPage < _pageContents.length) _indexPage += 1;
+    print(_indexPage);
+    _controller.animateToPage(_indexPage,
+        curve: Curves.ease, duration: Duration(milliseconds: 200));
   }
 
   void previousPage() {
-    if (_controller.page > _pageContents.length) {
-      nextChapter();
-    } else {
-      setState(() {
-        _controller.jumpToPage(_indexPage + 1);
-      });
-    }
+    if (_indexPage > 0) _indexPage -= 1;
+    print(_indexPage);
+    _controller.animateToPage(_indexPage,
+        curve: Curves.ease, duration: Duration(milliseconds: 200));
   }
 
   Widget createButton(String text, IconData icon, {Function onTap}) {

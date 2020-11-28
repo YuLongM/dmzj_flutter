@@ -178,7 +178,7 @@ class _NovelDetailPageState extends State<NovelDetailPage>
                           ? createDetail()
                           : _loadfail
                               ? Center(
-                                  child: Text("漫画走丢了 w(ﾟДﾟ)w ！"),
+                                  child: Text("小说走丢了 w(ﾟДﾟ)w ！"),
                                 )
                               : Container()),
                 ],
@@ -341,6 +341,7 @@ class _NovelDetailPageState extends State<NovelDetailPage>
                 child: Container(
                   color: Theme.of(context).cardColor,
                   child: ExpansionTile(
+                    initiallyExpanded: his != null,
                     title: Text(f.volume_name),
                     subtitle:
                         his != null ? Text("上次看到:" + his.chapter_name) : null,
@@ -514,8 +515,11 @@ class _NovelDetailPageState extends State<NovelDetailPage>
       if (!ConfigHelper.getUserIsLogined() ?? false) {
         return;
       }
-      var response = await http.get(Api.novelCheckSubscribe(widget.novelId,
-          Provider.of<AppUserInfoProvider>(context, listen: false).loginInfo.uid));
+      var response = await http.get(Api.novelCheckSubscribe(
+          widget.novelId,
+          Provider.of<AppUserInfoProvider>(context, listen: false)
+              .loginInfo
+              .uid));
       var jsonMap = jsonDecode(response.body);
       setState(() {
         _isSubscribe = jsonMap["code"] == 0;
