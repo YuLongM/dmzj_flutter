@@ -1,7 +1,7 @@
 {
     "version":"1.2.2",
-    "version_code":"201124",
-    "message":"优化漫画阅读",
+    "version_code":"201128",
+    "message":"修复忘了加载历史记录",
     "android_url":"https://github.com/tom8zds/dmzj_flutter/releases/latest",
     "ios_url":"",
     "hide_banner":true
