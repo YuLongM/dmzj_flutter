@@ -486,6 +486,7 @@ class _NovelReaderPageState extends State<NovelReaderPage> {
           ],
         ),
       ),
+      endDrawerEnableOpenDragGesture: false,
       endDrawer: Drawer(
         child: Container(
             height: MediaQuery.of(context).size.height,
