@@ -559,6 +559,8 @@ class _ComicDetailPageState extends State<ComicDetailPage>
       _loading = true;
       _noCopyright = false;
     });
+    Provider.of<ComicHistoryProvider>(context, listen: false)
+        .updateHistory(widget.comicId);
     loadDetail();
     checkSubscribe();
     loadRelated();
