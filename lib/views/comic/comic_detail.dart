@@ -38,7 +38,7 @@ class _ComicDetailPageState extends State<ComicDetailPage>
   double detailExpandHeight = 150 + kToolbarHeight + 24;
   @override
   bool get wantKeepAlive => true;
-  bool _loaded = false;
+  bool _indebug = false;
 
   @override
   void initState() {
@@ -85,15 +85,17 @@ class _ComicDetailPageState extends State<ComicDetailPage>
                     actions: (_detail != null)
                         ? <Widget>[
                             //屏蔽下载功能
-                            IconButton(
-                                icon: Icon(Icons.cloud_download),
-                                onPressed: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (BuildContext context) =>
-                                              ComicDownloadPage(_detail)));
-                                }),
+                            _indebug
+                                ? IconButton(
+                                    icon: Icon(Icons.cloud_download),
+                                    onPressed: () {
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (BuildContext context) =>
+                                                  ComicDownloadPage(_detail)));
+                                    })
+                                : Container(),
                             Provider.of<AppUserInfoProvider>(context).isLogin &&
                                     _isSubscribe
                                 ? IconButton(
@@ -603,7 +605,6 @@ class _ComicDetailPageState extends State<ComicDetailPage>
       setState(() {
         _detail = detail;
         _loading = false;
-        _loaded = true;
       });
     } catch (e) {
       print(e);

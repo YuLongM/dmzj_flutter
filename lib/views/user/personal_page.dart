@@ -141,7 +141,7 @@ class _PersonalPageState extends State<PersonalPage> {
                             trailing:
                                 Icon(Icons.chevron_right, color: Colors.grey),
                             leading: Icon(Icons.file_download),
-                            onTap: () => {
+                            onTap: () {
                               // Navigator.push(
                               //   context,
                               //   MaterialPageRoute(
@@ -149,13 +149,17 @@ class _PersonalPageState extends State<PersonalPage> {
                               //         LocalComicPage(),
                               //   ),
                               // )
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (BuildContext context) =>
-                                        DownloadListView()),
-                              ),
-                              Fluttertoast.showToast(msg: '敬请期待')
+                              bool inDebugMode = false;
+                              assert(inDebugMode = true);
+                              if (inDebugMode) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (BuildContext context) =>
+                                          DownloadListView()),
+                                );
+                              }
+                              Fluttertoast.showToast(msg: '敬请期待');
                             },
                           )
                         ],
