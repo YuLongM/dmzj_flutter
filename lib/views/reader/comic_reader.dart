@@ -529,18 +529,9 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
     return InkWell(
       onTap: () {
         setState(() {
-          // if (_showSideBar) {
-          //   _showSideBar = false;
-          //   return;
-          // }
           _showControls = !_showControls;
         });
       },
-      // onLongPress: () {
-      //   setState(() {
-      //     _showSideBar = true;
-      //   });
-      // },
       child: Container(
         color: Colors.black,
         child: ComicView.builder(
@@ -579,6 +570,52 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
     );
   }
 
+  Widget createHorizontalDoubleReader() {
+    int pageCount = (_detail.page_url.length + 1) ~/ 2;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _showControls = !_showControls;
+        });
+      },
+      child: Container(
+        color: Colors.black,
+        child: ComicView.builder(
+          scrollPhysics: ScrollPhysics(),
+          builder: _build2Item,
+          gaplessPlayback: true,
+          reverse: Provider.of<ReaderConfigProvider>(context).comicReadReverse,
+          itemCount: pageCount + 3,
+          loadingBuilder: (context, event) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          },
+          loadFailedChild: Center(
+            child: Text("出错啦"),
+          ),
+          pageController: _pageController,
+          onPageChanged: (i) {
+            if (i == pageCount + 2) {
+              nextChapter();
+              return;
+            }
+            if (i == 0 && !_loading) {
+              previousChapter();
+              return;
+            }
+            if (i < pageCount + 1) {
+              //preload(i);
+              setState(() {
+                _selectIndex = i;
+              });
+            }
+          },
+        ),
+      ),
+    );
+  }
+
   PhotoViewGalleryPageOptions _buildItem(BuildContext context, int index) {
     if (index > 0 && index <= _detail.page_url.length) {
       return PhotoViewGalleryPageOptions(
@@ -586,6 +623,46 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
         imageProvider: CachedNetworkImageProvider(
           _detail.page_url[index - 1],
           headers: {"Referer": "http://www.dmzj.com/"},
+        ),
+        initialScale: PhotoViewComputedScale.contained,
+        minScale: PhotoViewComputedScale.contained,
+        maxScale: PhotoViewComputedScale.covered * 4.1,
+      );
+    } else {
+      return PhotoViewGalleryPageOptions.customChild(
+          disableGestures: true,
+          child: SafeArea(
+            child: getExtraPage(index),
+          ));
+    }
+  }
+
+  PhotoViewGalleryPageOptions _build2Item(BuildContext context, int index) {
+    int pageCount = (_detail.page_url.length + 1) ~/ 2;
+    if (index > 0 && index <= pageCount) {
+      return PhotoViewGalleryPageOptions.customChild(
+        //filterQuality: FilterQuality.high,
+        child: Container(
+          width: double.infinity,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                  child: Image(
+                image: CachedNetworkImageProvider(
+                  _detail.page_url[index - 1],
+                  headers: {"Referer": "http://www.dmzj.com/"},
+                ),
+              )),
+              Flexible(
+                  child: Image(
+                image: CachedNetworkImageProvider(
+                  _detail.page_url[index - 1],
+                  headers: {"Referer": "http://www.dmzj.com/"},
+                ),
+              ))
+            ],
+          ),
         ),
         initialScale: PhotoViewComputedScale.contained,
         minScale: PhotoViewComputedScale.contained,
