@@ -593,7 +593,10 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
       );
     } else {
       return PhotoViewGalleryPageOptions.customChild(
-          child: getExtraPage(index));
+          disableGestures: true,
+          child: SafeArea(
+            child: getExtraPage(index),
+          ));
     }
   }
 
