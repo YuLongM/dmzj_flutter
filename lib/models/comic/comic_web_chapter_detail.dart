@@ -53,6 +53,7 @@ class ComicWebChapterDetail {
   int get high_file_size => _high_file_size;
   int _picnum;
   int get picnum => _picnum;
+  void set picnum(int value) => picnum;
   int _hit;
   int get hit => _hit;
   int _prev_chap_id;

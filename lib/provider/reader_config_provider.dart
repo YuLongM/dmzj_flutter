@@ -16,6 +16,7 @@ class ReaderConfigProvider with ChangeNotifier {
     changeNovelReadDirection(ConfigHelper.getNovelReadDirection());
     changeNovelReadTheme(ConfigHelper.getNovelTheme());
     changeVolumekeyListen(ConfigHelper.getVolumeKeyListen());
+    changeReaderDoublePage(ConfigHelper.getReaderDoublePage());
   }
 
   bool _comicVerticalMode;
@@ -140,5 +141,13 @@ class ReaderConfigProvider with ChangeNotifier {
     _volumeKeyListen = value;
     notifyListeners();
     ConfigHelper.setVolumeKeyListen(value);
+  }
+
+  bool _readerDoublePage;
+  get readerDoublePage => _readerDoublePage;
+  void changeReaderDoublePage(bool value) {
+    _readerDoublePage = value;
+    notifyListeners();
+    ConfigHelper.setReaderDoublePage(value);
   }
 }

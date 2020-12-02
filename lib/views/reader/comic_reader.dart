@@ -175,9 +175,9 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
   }
 
   bool _showControls = false;
-  bool _showChapters = false;
   int _selectIndex = 1;
   String _verticalValue = "0%";
+  bool _doublePage = true;
 
   @override
   Widget build(BuildContext context) {
@@ -191,7 +191,10 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
                       ? Provider.of<ReaderConfigProvider>(context)
                               .comicVerticalMode
                           ? createVerticalReader()
-                          : createHorizontalReader()
+                          : Provider.of<ReaderConfigProvider>(context)
+                                  .readerDoublePage
+                              ? createHorizontalDoubleReader()
+                              : createHorizontalReader()
                       : Center(
                           child: CircularProgressIndicator(),
                         ),
@@ -333,8 +336,17 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
                                             onChanged: (e) {
                                               setState(() {
                                                 _selectIndex = e.toInt();
-                                                _pageController
-                                                    .jumpToPage(e.toInt() + 1);
+                                                if (Provider.of<
+                                                            ReaderConfigProvider>(
+                                                        context,
+                                                        listen: false)
+                                                    .readerDoublePage)
+                                                  _pageController.jumpToPage(
+                                                      (_selectIndex + 1) ~/ 2 +
+                                                          1);
+                                                else
+                                                  _pageController.jumpToPage(
+                                                      e.toInt() + 1);
                                               });
                                             },
                                           )
@@ -462,6 +474,10 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
     );
   }
 
+  int getDoubleIndex() {
+    return (_detail.page_url.length + 1) ~/ 2;
+  }
+
   double getOffset() {
     return (widget.chapters.indexOf(_currentItem) + 1) * 80 -
         MediaQuery.of(context).size.height / 2;
@@ -472,16 +488,12 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
   }
 
   void nextPage() {
-    if (_selectIndex < _detail.page_url.length + 2) _selectIndex += 1;
-    print(_selectIndex);
-    _pageController.animateToPage(_selectIndex,
+    _pageController.nextPage(
         curve: Curves.ease, duration: Duration(milliseconds: 200));
   }
 
   void previousPage() {
-    if (_selectIndex > 0) _selectIndex -= 1;
-    print(_selectIndex);
-    _pageController.animateToPage(_selectIndex,
+    _pageController.previousPage(
         curve: Curves.ease, duration: Duration(milliseconds: 200));
   }
 
@@ -570,8 +582,29 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
     );
   }
 
+  PhotoViewGalleryPageOptions _buildItem(BuildContext context, int index) {
+    if (index > 0 && index <= _detail.page_url.length) {
+      return PhotoViewGalleryPageOptions(
+        filterQuality: FilterQuality.high,
+        imageProvider: CachedNetworkImageProvider(
+          _detail.page_url[index - 1],
+          headers: {"Referer": "http://www.dmzj.com/"},
+        ),
+        initialScale: PhotoViewComputedScale.contained,
+        minScale: PhotoViewComputedScale.contained,
+        maxScale: PhotoViewComputedScale.covered * 4.1,
+      );
+    } else {
+      return PhotoViewGalleryPageOptions.customChild(
+          disableGestures: true,
+          child: SafeArea(
+            child: getExtraPage(index),
+          ));
+    }
+  }
+
   Widget createHorizontalDoubleReader() {
-    int pageCount = (_detail.page_url.length + 1) ~/ 2;
+    int pageCount = getDoubleIndex();
     return InkWell(
       onTap: () {
         setState(() {
@@ -607,7 +640,7 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
             if (i < pageCount + 1) {
               //preload(i);
               setState(() {
-                _selectIndex = i;
+                _selectIndex = 2 * i - 1;
               });
             }
           },
@@ -616,53 +649,38 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
     );
   }
 
-  PhotoViewGalleryPageOptions _buildItem(BuildContext context, int index) {
-    if (index > 0 && index <= _detail.page_url.length) {
-      return PhotoViewGalleryPageOptions(
-        filterQuality: FilterQuality.high,
-        imageProvider: CachedNetworkImageProvider(
-          _detail.page_url[index - 1],
-          headers: {"Referer": "http://www.dmzj.com/"},
-        ),
-        initialScale: PhotoViewComputedScale.contained,
-        minScale: PhotoViewComputedScale.contained,
-        maxScale: PhotoViewComputedScale.covered * 4.1,
-      );
-    } else {
-      return PhotoViewGalleryPageOptions.customChild(
-          disableGestures: true,
-          child: SafeArea(
-            child: getExtraPage(index),
-          ));
-    }
-  }
-
   PhotoViewGalleryPageOptions _build2Item(BuildContext context, int index) {
-    int pageCount = (_detail.page_url.length + 1) ~/ 2;
+    int pageCount = getDoubleIndex();
     if (index > 0 && index <= pageCount) {
       return PhotoViewGalleryPageOptions.customChild(
         //filterQuality: FilterQuality.high,
-        child: Container(
-          width: double.infinity,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Flexible(
-                  child: Image(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            (2 * index - 1 < _detail.picnum)
+                ? Flexible(
+                    child: Image(
+                      filterQuality: FilterQuality.high,
+                      image: CachedNetworkImageProvider(
+                        _detail.page_url[2 * index - 1],
+                        headers: {"Referer": "http://www.dmzj.com/"},
+                      ),
+                    ),
+                  )
+                : Container(),
+            SizedBox(
+              width: 2,
+            ),
+            Flexible(
+              child: Image(
+                filterQuality: FilterQuality.high,
                 image: CachedNetworkImageProvider(
-                  _detail.page_url[index - 1],
+                  _detail.page_url[2 * index - 2],
                   headers: {"Referer": "http://www.dmzj.com/"},
                 ),
-              )),
-              Flexible(
-                  child: Image(
-                image: CachedNetworkImageProvider(
-                  _detail.page_url[index - 1],
-                  headers: {"Referer": "http://www.dmzj.com/"},
-                ),
-              ))
-            ],
-          ),
+              ),
+            ),
+          ],
         ),
         initialScale: PhotoViewComputedScale.contained,
         minScale: PhotoViewComputedScale.contained,
@@ -678,6 +696,7 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
   }
 
   Widget getExtraPage(int index) {
+    int pageCount = getDoubleIndex();
     if (index == 0) {
       return Center(
         child: Text(
@@ -685,10 +704,10 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
             style: TextStyle(color: Colors.grey)),
       );
     }
-    if (index == _detail.page_url.length + 1) {
+    if (index == pageCount + 1) {
       return createTucao(24);
     }
-    if (index == _detail.page_url.length + 2) {
+    if (index == pageCount + 2) {
       return Center(
         child: Text(
             widget.chapters.indexOf(_currentItem) == widget.chapters.length - 1
@@ -920,6 +939,26 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
                         .changeComicVertical(e);
                     //Navigator.pop(context);
                   }),
+              (!Provider.of<ReaderConfigProvider>(context).comicVerticalMode &&
+                      MediaQuery.of(context).orientation ==
+                          Orientation.landscape)
+                  ? SwitchListTile(
+                      title: Text(
+                        "双页阅读",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      value: Provider.of<ReaderConfigProvider>(context)
+                          .readerDoublePage,
+                      onChanged: (e) {
+                        Provider.of<ReaderConfigProvider>(context,
+                                listen: false)
+                            .changeReaderDoublePage(e);
+                        if (e)
+                          _pageController.jumpToPage(
+                              _selectIndex = (_selectIndex + 1) ~/ 2);
+                        //Navigator.pop(context);
+                      })
+                  : Container(),
               !Provider.of<ReaderConfigProvider>(context).comicVerticalMode
                   ? SwitchListTile(
                       title: Text(
@@ -1031,7 +1070,12 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
         if (page > detail.page_url.length) {
           page = detail.page_url.length;
         }
-        _pageController = new PreloadPageController(initialPage: page);
+        if (Provider.of<ReaderConfigProvider>(context, listen: false)
+            .readerDoublePage)
+          _pageController =
+              new PreloadPageController(initialPage: (page + 1) ~/ 2);
+        else
+          _pageController = new PreloadPageController(initialPage: page);
         setState(() {
           _selectIndex = page;
         });
@@ -1041,11 +1085,18 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
         if (direction == 1) {
           i = detail.page_url.length + 1;
         }
-        _pageController = new PreloadPageController(initialPage: i);
+        if (Provider.of<ReaderConfigProvider>(context, listen: false)
+            .readerDoublePage)
+          _pageController =
+              new PreloadPageController(initialPage: (i + 1) ~/ 2);
+        else
+          _pageController = new PreloadPageController(initialPage: i);
         setState(() {
           _selectIndex = i - direction;
         });
       }
+
+      detail.picnum = detail.page_url.length;
 
       setState(() {
         _detail = detail;

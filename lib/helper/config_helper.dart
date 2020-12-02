@@ -103,6 +103,15 @@ class ConfigHelper {
     prefs.setBool("ComicVertical", value);
   }
 
+  ///漫画双页阅读
+  static bool getReaderDoublePage() {
+    return prefs.getBool("DoublePage") ?? false;
+  }
+
+  static void setReaderDoublePage(bool value) {
+    prefs.setBool("DoublePage", value);
+  }
+
   /// 漫画阅读屏幕常亮
   static bool getComicWakelock() {
     return prefs.getBool("ComicWakelock") ?? false;
