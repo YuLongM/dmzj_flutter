@@ -52,57 +52,108 @@ class NovelRecommendState extends State<NovelRecommend>
     super.build(context);
     return Scaffold(
       // floatingActionButton: MediaQuery.of(context).size.width > 600
-      body: EasyRefresh(
+      body: EasyRefresh.custom(
         header: MaterialHeader(),
         footer: MaterialFooter(),
         onRefresh: refreshData,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              AppBanner(
-                  items: _banners
-                      .map<Widget>((i) => BannerImageItem(
-                            pic: i.cover,
-                            title: i.title,
-                            onTaped: () => Utils.openPage(context, i.id, i.type,
-                                url: i.url, title: i.title),
-                          ))
-                      .toList()),
-              _getItem("最近更新", _new,
-                  icon: Icon(Icons.chevron_right, color: Colors.grey),
-                  needSubTitle: false,
-                  ratio: getWidth() / ((getWidth() * (360 / 270)) + 28),
-                  ontap: () => Utils.changeNovelHomeTabIndex.fire(1)),
-              _getItem(
-                "动画进行时",
-                _animeIng,
-                ratio: getWidth() / ((getWidth() * (360 / 270)) + 44),
-              ),
-              _getItem(
-                "即将动画化",
-                _anime,
-                ratio: getWidth() / ((getWidth() * (360 / 270)) + 44),
-              ),
-              _getItem(
-                "经典必看",
-                _hot,
-                ratio: getWidth() / ((getWidth() * (360 / 270)) + 44),
-              ),
-              Container(
-                width: double.infinity,
-                height: kToolbarHeight,
-                //padding: EdgeInsets.all(12),
-                child: Center(
-                  child: Text(
-                    '没有下面了',
-                    style: TextStyle(color: Colors.grey),
+        slivers: [
+          MediaQuery.of(context).orientation == Orientation.landscape
+              ? SliverToBoxAdapter(
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    children: [
+                      AppBanner(
+                          items: _banners
+                              .map<Widget>((i) => BannerImageItem(
+                                    pic: i.cover,
+                                    title: i.title,
+                                    onTaped: () => Utils.openPage(
+                                        context, i.id, i.type,
+                                        url: i.url, title: i.title),
+                                  ))
+                              .toList()),
+                      _getItem("最近更新", _new,
+                          icon: Icon(Icons.chevron_right, color: Colors.grey),
+                          needSubTitle: false,
+                          ratio: getWidth() / ((getWidth() * (360 / 270)) + 28),
+                          ontap: () => Utils.changeNovelHomeTabIndex.fire(1)),
+                      _getItem(
+                        "动画进行时",
+                        _animeIng,
+                        ratio: getWidth() / ((getWidth() * (360 / 270)) + 44),
+                      ),
+                      _getItem(
+                        "即将动画化",
+                        _anime,
+                        ratio: getWidth() / ((getWidth() * (360 / 270)) + 44),
+                      ),
+                      Container(
+                        width: MediaQuery.of(context).size.width,
+                        padding: EdgeInsets.symmetric(horizontal: 40),
+                        child: _getItem("经典必看", _hot,
+                            ratio:
+                                getWidth() / ((getWidth() * (360 / 270)) + 44),
+                            count: 6),
+                      ),
+                      Container(
+                        width: double.infinity,
+                        height: kToolbarHeight,
+                        //padding: EdgeInsets.all(12),
+                        child: Center(
+                          child: Text(
+                            '没有下面了',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ),
-            ],
-          ),
-        ),
+                )
+              : SliverList(
+                  delegate: SliverChildListDelegate([
+                  AppBanner(
+                      items: _banners
+                          .map<Widget>((i) => BannerImageItem(
+                                pic: i.cover,
+                                title: i.title,
+                                onTaped: () => Utils.openPage(
+                                    context, i.id, i.type,
+                                    url: i.url, title: i.title),
+                              ))
+                          .toList()),
+                  _getItem("最近更新", _new,
+                      icon: Icon(Icons.chevron_right, color: Colors.grey),
+                      needSubTitle: false,
+                      ratio: getWidth() / ((getWidth() * (360 / 270)) + 28),
+                      ontap: () => Utils.changeNovelHomeTabIndex.fire(1)),
+                  _getItem(
+                    "动画进行时",
+                    _animeIng,
+                    ratio: getWidth() / ((getWidth() * (360 / 270)) + 44),
+                  ),
+                  _getItem(
+                    "即将动画化",
+                    _anime,
+                    ratio: getWidth() / ((getWidth() * (360 / 270)) + 44),
+                  ),
+                  _getItem(
+                    "经典必看",
+                    _hot,
+                    ratio: getWidth() / ((getWidth() * (360 / 270)) + 44),
+                  ),
+                  Container(
+                    width: double.infinity,
+                    height: kToolbarHeight,
+                    //padding: EdgeInsets.all(12),
+                    child: Center(
+                      child: Text(
+                        '没有下面了',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                  ),
+                ])),
+        ],
       ),
     );
   }

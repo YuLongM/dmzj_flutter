@@ -939,9 +939,7 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
                         .changeComicVertical(e);
                     //Navigator.pop(context);
                   }),
-              (!Provider.of<ReaderConfigProvider>(context).comicVerticalMode &&
-                      MediaQuery.of(context).orientation ==
-                          Orientation.landscape)
+              !Provider.of<ReaderConfigProvider>(context).comicVerticalMode
                   ? SwitchListTile(
                       title: Text(
                         "双页阅读",

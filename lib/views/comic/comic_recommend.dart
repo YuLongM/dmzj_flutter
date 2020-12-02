@@ -68,6 +68,7 @@ class ComicRecommendState extends State<ComicRecommend>
 
   @override
   Widget build(BuildContext context) {
+    print(MediaQuery.of(context).size.toString());
     super.build(context);
     return Scaffold(
       //todo: 适配平板页面，使用sliver组件
@@ -75,65 +76,136 @@ class ComicRecommendState extends State<ComicRecommend>
         header: MaterialHeader(),
         onRefresh: refreshData,
         slivers: [
-          SliverToBoxAdapter(
-            child: AppBanner(
-                items: _banners
-                    .map<Widget>((i) => BannerImageItem(
-                          pic: i.cover,
-                          title: i.title,
-                          onTaped: () => Utils.openPage(context, i.id, i.type,
-                              url: i.url, title: i.title),
-                        ))
-                    .toList()),
-          ),
-          SliverList(
-              delegate: SliverChildListDelegate([
-            _getItem2(
-              "我的订阅",
-              _mySub,
-              icon: Icon(Icons.chevron_right, color: Colors.grey),
-              ontap: () => Utils.openSubscribePage(context),
-              ratio: getWidth() / ((getWidth() * (360 / 270)) + 24),
-            ),
-            _getItem(
-              "近期必看",
-              _recommend,
-              ratio: getWidth() / ((getWidth() * (360 / 270)) + 36),
-            ),
-            _getItem("火热专题", _special,
-                needSubTitle: false,
-                imgHeight: 170,
-                imgWidth: 320,
-                count: 2,
-                ratio: getWidth2() / ((getWidth2() * (170 / 320)) + 32),
-                icon: Icon(Icons.chevron_right, color: Colors.grey),
-                ontap: () => Utils.changeComicHomeTabIndex.fire(4)),
-            _getItem2("猜你喜欢", _like,
-                icon: Icon(Icons.refresh, color: Colors.grey),
-                ratio: getWidth() / ((getWidth() * (360 / 270)) + 36),
-                ontap: () async => await loadLike()),
-            _getItem("热门连载", _hot,
-                icon: Icon(Icons.refresh, color: Colors.grey),
-                ratio: getWidth() / ((getWidth() * (360 / 270)) + 36),
-                ontap: () => loadHot()),
-            _getItem(
-              "条漫专区",
-              _tiaoman,
-              needSubTitle: false,
-              imgHeight: 170,
-              imgWidth: 320,
-              count: 2,
-              ratio: getWidth2() / ((getWidth2() * (170 / 320)) + 32),
-            ),
-            _getItem("动画专区", _anime,
-                icon: Icon(Icons.chevron_right, color: Colors.grey),
-                ratio: getWidth() / ((getWidth() * (360 / 270)) + 36),
-                ontap: () => Utils.openPage(context, 17192, 11, title: "动画")),
-            _getItem2("最新上架", _new,
-                icon: Icon(Icons.chevron_right, color: Colors.grey),
-                ratio: getWidth() / ((getWidth() * (360 / 270)) + 36),
-                ontap: () => Utils.changeComicHomeTabIndex.fire(1)),
-          ])),
+          MediaQuery.of(context).orientation == Orientation.landscape
+              ? SliverToBoxAdapter(
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    children: [
+                      AppBanner(
+                          items: _banners
+                              .map<Widget>((i) => BannerImageItem(
+                                    pic: i.cover,
+                                    title: i.title,
+                                    onTaped: () => Utils.openPage(
+                                        context, i.id, i.type,
+                                        url: i.url, title: i.title),
+                                  ))
+                              .toList()),
+                      _getItem2(
+                        "我的订阅",
+                        _mySub,
+                        icon: Icon(Icons.chevron_right, color: Colors.grey),
+                        ontap: () => Utils.openSubscribePage(context),
+                        ratio: getWidth() / ((getWidth() * (360 / 270)) + 24),
+                      ),
+                      _getItem(
+                        "近期必看",
+                        _recommend,
+                        ratio: getWidth() / ((getWidth() * (360 / 270)) + 36),
+                      ),
+                      _getItem2("猜你喜欢", _like,
+                          icon: Icon(Icons.refresh, color: Colors.grey),
+                          ratio: getWidth() / ((getWidth() * (360 / 270)) + 36),
+                          ontap: () async => await loadLike()),
+                      Container(
+                        width: MediaQuery.of(context).size.width,
+                        padding: EdgeInsets.symmetric(horizontal: 40),
+                        child: _getItem("热门连载", _hot,
+                            icon: Icon(Icons.refresh, color: Colors.grey),
+                            ratio:
+                                getWidth() / ((getWidth() * (360 / 270)) + 36),
+                            ontap: () => loadHot(),
+                            count: 6),
+                      ),
+                      _getItem("火热专题", _special,
+                          needSubTitle: false,
+                          imgHeight: 170,
+                          imgWidth: 320,
+                          count: 2,
+                          ratio:
+                              getWidth2() / ((getWidth2() * (170 / 320)) + 32),
+                          icon: Icon(Icons.chevron_right, color: Colors.grey),
+                          ontap: () => Utils.changeComicHomeTabIndex.fire(4)),
+                      _getItem(
+                        "条漫专区",
+                        _tiaoman,
+                        needSubTitle: false,
+                        imgHeight: 170,
+                        imgWidth: 320,
+                        count: 2,
+                        ratio: getWidth2() / ((getWidth2() * (170 / 320)) + 32),
+                      ),
+                      _getItem("动画专区", _anime,
+                          icon: Icon(Icons.chevron_right, color: Colors.grey),
+                          ratio: getWidth() / ((getWidth() * (360 / 270)) + 36),
+                          ontap: () =>
+                              Utils.openPage(context, 17192, 11, title: "动画")),
+                      _getItem2("最新上架", _new,
+                          icon: Icon(Icons.chevron_right, color: Colors.grey),
+                          ratio: getWidth() / ((getWidth() * (360 / 270)) + 36),
+                          ontap: () => Utils.changeComicHomeTabIndex.fire(1)),
+                    ],
+                  ),
+                )
+              : SliverList(
+                  delegate: SliverChildListDelegate([
+                  AppBanner(
+                      items: _banners
+                          .map<Widget>((i) => BannerImageItem(
+                                pic: i.cover,
+                                title: i.title,
+                                onTaped: () => Utils.openPage(
+                                    context, i.id, i.type,
+                                    url: i.url, title: i.title),
+                              ))
+                          .toList()),
+                  _getItem2(
+                    "我的订阅",
+                    _mySub,
+                    icon: Icon(Icons.chevron_right, color: Colors.grey),
+                    ontap: () => Utils.openSubscribePage(context),
+                    ratio: getWidth() / ((getWidth() * (360 / 270)) + 24),
+                  ),
+                  _getItem(
+                    "近期必看",
+                    _recommend,
+                    ratio: getWidth() / ((getWidth() * (360 / 270)) + 36),
+                  ),
+                  _getItem("火热专题", _special,
+                      needSubTitle: false,
+                      imgHeight: 170,
+                      imgWidth: 320,
+                      count: 2,
+                      ratio: getWidth2() / ((getWidth2() * (170 / 320)) + 32),
+                      icon: Icon(Icons.chevron_right, color: Colors.grey),
+                      ontap: () => Utils.changeComicHomeTabIndex.fire(4)),
+                  _getItem2("猜你喜欢", _like,
+                      icon: Icon(Icons.refresh, color: Colors.grey),
+                      ratio: getWidth() / ((getWidth() * (360 / 270)) + 36),
+                      ontap: () async => await loadLike()),
+                  _getItem("热门连载", _hot,
+                      icon: Icon(Icons.refresh, color: Colors.grey),
+                      ratio: getWidth() / ((getWidth() * (360 / 270)) + 36),
+                      ontap: () => loadHot()),
+                  _getItem(
+                    "条漫专区",
+                    _tiaoman,
+                    needSubTitle: false,
+                    imgHeight: 170,
+                    imgWidth: 320,
+                    count: 2,
+                    ratio: getWidth2() / ((getWidth2() * (170 / 320)) + 32),
+                  ),
+                  _getItem("动画专区", _anime,
+                      icon: Icon(Icons.chevron_right, color: Colors.grey),
+                      ratio: getWidth() / ((getWidth() * (360 / 270)) + 36),
+                      ontap: () =>
+                          Utils.openPage(context, 17192, 11, title: "动画")),
+                  _getItem2("最新上架", _new,
+                      icon: Icon(Icons.chevron_right, color: Colors.grey),
+                      ratio: getWidth() / ((getWidth() * (360 / 270)) + 36),
+                      ontap: () => Utils.changeComicHomeTabIndex.fire(1)),
+                ])),
           SliverToBoxAdapter(
             child: Container(
               height: kToolbarHeight,
@@ -500,7 +572,9 @@ class ComicRecommendState extends State<ComicRecommend>
         return;
       }
       var response = await http.get(Api.comicMySub(
-          Provider.of<AppUserInfoProvider>(context, listen: false).loginInfo.uid));
+          Provider.of<AppUserInfoProvider>(context, listen: false)
+              .loginInfo
+              .uid));
       var jsonMap = jsonDecode(response.body);
 
       List items = jsonMap["data"]["data"];
