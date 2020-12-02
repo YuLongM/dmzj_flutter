@@ -50,6 +50,8 @@ class NovelRecommendState extends State<NovelRecommend>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    double widthMax = MediaQuery.of(context).size.width /
+        (1 + MediaQuery.of(context).orientation.index);
     return Scaffold(
       // floatingActionButton: MediaQuery.of(context).size.width > 600
       body: EasyRefresh.custom(
@@ -62,16 +64,19 @@ class NovelRecommendState extends State<NovelRecommend>
                   child: Wrap(
                     alignment: WrapAlignment.center,
                     children: [
-                      AppBanner(
-                          items: _banners
-                              .map<Widget>((i) => BannerImageItem(
-                                    pic: i.cover,
-                                    title: i.title,
-                                    onTaped: () => Utils.openPage(
-                                        context, i.id, i.type,
-                                        url: i.url, title: i.title),
-                                  ))
-                              .toList()),
+                      Container(
+                        width: widthMax,
+                        child: AppBanner(
+                            items: _banners
+                                .map<Widget>((i) => BannerImageItem(
+                                      pic: i.cover,
+                                      title: i.title,
+                                      onTaped: () => Utils.openPage(
+                                          context, i.id, i.type,
+                                          url: i.url, title: i.title),
+                                    ))
+                                .toList()),
+                      ),
                       _getItem("最近更新", _new,
                           icon: Icon(Icons.chevron_right, color: Colors.grey),
                           needSubTitle: false,
@@ -89,11 +94,11 @@ class NovelRecommendState extends State<NovelRecommend>
                       ),
                       Container(
                         width: MediaQuery.of(context).size.width,
-                        padding: EdgeInsets.symmetric(horizontal: 40),
                         child: _getItem("经典必看", _hot,
                             ratio:
                                 getWidth() / ((getWidth() * (360 / 270)) + 44),
-                            count: 6),
+                            count: 6 ~/
+                                (2 - MediaQuery.of(context).orientation.index)),
                       ),
                       Container(
                         width: double.infinity,
@@ -166,6 +171,9 @@ class NovelRecommendState extends State<NovelRecommend>
       double ratio = 3 / 5.2,
       double imgWidth = 270,
       double imgHeight = 360}) {
+    double widthMax = MediaQuery.of(context).size.width /
+            (1 + MediaQuery.of(context).orientation.index) -
+        16;
     return Offstage(
       offstage: items == null || items.length == 0,
       child: Padding(
@@ -173,7 +181,7 @@ class NovelRecommendState extends State<NovelRecommend>
         child: Container(
           padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
-          constraints: BoxConstraints(maxWidth: 584),
+          constraints: BoxConstraints(maxWidth: widthMax),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
