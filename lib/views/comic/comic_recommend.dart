@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dmzj/helper/api.dart';
+import 'package:flutter_dmzj/helper/config_helper.dart';
 import 'package:flutter_dmzj/provider/user_info_provider.dart';
 import 'package:flutter_dmzj/helper/utils.dart';
 import 'package:flutter_dmzj/models/comic/comic_home_banner_item.dart';
@@ -89,13 +90,41 @@ class ComicRecommendState extends State<ComicRecommend>
                               ))
                           .toList()),
                 ),
-                _getItem2(
-                  "我的订阅",
-                  _mySub,
-                  icon: Icon(Icons.chevron_right, color: Colors.grey),
-                  ontap: () => Utils.openSubscribePage(context),
-                  ratio: getWidth() / ((getWidth() * (360 / 270)) + 24),
-                ),
+                Provider.of<AppUserInfoProvider>(context).isLogin
+                    ? _getItem2(
+                        "我的订阅",
+                        _mySub,
+                        icon: Icon(Icons.chevron_right, color: Colors.grey),
+                        ontap: () => Utils.openSubscribePage(context),
+                        ratio: getWidth() / ((getWidth() * (360 / 270)) + 24),
+                      )
+                    : Container(
+                        width: widthMax,
+                        child: AspectRatio(
+                          aspectRatio: 7 / 4,
+                          child: Card(
+                            margin: EdgeInsets.all(8),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '请登录',
+                                  style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                RaisedButton(
+                                    onPressed: () {},
+                                    color: Theme.of(context).accentColor,
+                                    child: Icon(
+                                      Icons.arrow_forward,
+                                      color: Colors.white,
+                                    ),
+                                    shape: CircleBorder())
+                              ],
+                            ),
+                          ),
+                        )),
                 _getItem(
                   "近期必看",
                   _recommend,
