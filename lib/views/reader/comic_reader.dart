@@ -696,7 +696,12 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
   }
 
   Widget getExtraPage(int index) {
-    int pageCount = getDoubleIndex();
+    int pageCount = 0;
+    if (Provider.of<ReaderConfigProvider>(context).readerDoublePage) {
+      pageCount = getDoubleIndex();
+    } else {
+      pageCount = _detail.page_url.length;
+    }
     if (index == 0) {
       return Center(
         child: Text(
