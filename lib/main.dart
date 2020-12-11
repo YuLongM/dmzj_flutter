@@ -113,26 +113,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'dmzj dev',
-      theme: ThemeData(
-        brightness: Provider.of<AppThemeProvider>(context).isDark
-            ? Brightness.dark
-            : Brightness.light,
-        primarySwatch: Provider.of<AppThemeProvider>(context).themeColor,
-        accentColor: Provider.of<AppThemeProvider>(context).themeColor,
-        toggleableActiveColor:
-            Provider.of<AppThemeProvider>(context).themeColor,
-        textSelectionColor: Provider.of<AppThemeProvider>(context).themeColor,
-      ),
+      theme: Provider.of<AppThemeProvider>(context).isDark
+          ? Provider.of<AppThemeProvider>(context).darkTheme
+          : Provider.of<AppThemeProvider>(context).appTheme,
       darkTheme: (Provider.of<AppThemeProvider>(context).sysDark)
-          ? ThemeData(
-              brightness: Brightness.dark,
-              primarySwatch: Provider.of<AppThemeProvider>(context).themeColor,
-              accentColor: Provider.of<AppThemeProvider>(context).themeColor,
-              toggleableActiveColor:
-                  Provider.of<AppThemeProvider>(context).themeColor,
-              textSelectionColor:
-                  Provider.of<AppThemeProvider>(context).themeColor,
-            )
+          ? Provider.of<AppThemeProvider>(context).darkTheme
           : null,
       home: MyHomePage(),
       initialRoute: "/",
@@ -232,8 +217,8 @@ class _MyHomePageState extends State<MyHomePage>
         bottomNavigationBar: BottomNavigationBar(
           type: BottomNavigationBarType.shifting,
           currentIndex: _index,
-          unselectedItemColor: Theme.of(context).disabledColor,
-          selectedItemColor: Theme.of(context).accentColor,
+          unselectedItemColor: Theme.of(context).buttonColor.withOpacity(0.5),
+          selectedItemColor: Theme.of(context).buttonColor,
           onTap: (index) {
             setState(() {
               if (index == 1 && newsPage == null) {
@@ -249,18 +234,22 @@ class _MyHomePageState extends State<MyHomePage>
           },
           items: <BottomNavigationBarItem>[
             BottomNavigationBarItem(
+              backgroundColor: Theme.of(context).bottomAppBarColor,
               label: "漫画",
               icon: Icon(Icons.photo_album),
             ),
             BottomNavigationBarItem(
+              backgroundColor: Theme.of(context).bottomAppBarColor,
               label: "新闻",
               icon: Icon(Icons.article),
             ),
             BottomNavigationBarItem(
+              backgroundColor: Theme.of(context).bottomAppBarColor,
               label: "轻小说",
               icon: Icon(Icons.book),
             ),
             BottomNavigationBarItem(
+              backgroundColor: Theme.of(context).bottomAppBarColor,
               label: "我的",
               icon: Icon(Icons.account_circle),
             ),

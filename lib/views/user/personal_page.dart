@@ -212,11 +212,9 @@ class _PersonalPageState extends State<PersonalPage> {
                         trailing: Padding(
                           padding: EdgeInsets.all(8),
                           child: Text(
-                            Provider.of<AppThemeProvider>(context)
-                                .themeColorName,
+                            Provider.of<AppThemeProvider>(context).appThemeName,
                             style: TextStyle(
-                                color: Provider.of<AppThemeProvider>(context)
-                                    .themeColor,
+                                color: Theme.of(context).accentColor,
                                 fontSize: 14.0),
                           ),
                         ),

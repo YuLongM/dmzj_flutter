@@ -5,17 +5,39 @@ class AppThemeProvider with ChangeNotifier {
   AppThemeProvider() {
     changeDark(ConfigHelper.getOpenDarkMode());
     changeSysDark(ConfigHelper.getSysDarkMode());
-    changeThemeColor(ConfigHelper.getAppTheme());
+    changeTheme(ConfigHelper.getAppTheme());
   }
 
-  static Map<String, Color> themeColors = {
-    "胖次蓝": Colors.blue,
-    "姨妈红": Colors.red,
-    "咸蛋黄": Colors.yellow,
-    "早苗绿": Colors.green,
-    "少女粉": Colors.pink,
-    "基佬紫": Colors.purple,
-    "朴素灰": Colors.blueGrey
+  ThemeData createThemeData(List<Color> color, bool isdark) {
+    if (color.length > 1) {
+      return ThemeData(
+        brightness: isdark ? Brightness.dark : Brightness.light,
+        primarySwatch: color[0],
+        accentColor: color[1],
+        toggleableActiveColor: color[2],
+        bottomAppBarColor: color[3],
+        buttonColor: color[0],
+      );
+    } else {
+      return ThemeData(
+        brightness: isdark ? Brightness.dark : Brightness.light,
+        primarySwatch: color[0],
+        accentColor: color[0],
+        buttonColor: color[0],
+        toggleableActiveColor: color[0],
+      );
+    }
+  }
+
+  static Map<String, List<Color>> localThemes = {
+    "胖次蓝": List.filled(1, Colors.blue),
+    "姨妈红": List.filled(1, Colors.red),
+    "咸蛋黄": List.filled(1, Colors.yellow),
+    "早苗绿": List.filled(1, Colors.green),
+    "少女粉": List.filled(1, Colors.pink),
+    "基佬紫": List.filled(1, Colors.purple),
+    "朴素灰": List.filled(1, Colors.blueGrey),
+    "赛博朋克": [Colors.pink, Colors.cyan, Colors.amber, Color(0xffebe105)]
   };
 
   void showThemeDialog(BuildContext context) {
@@ -32,16 +54,16 @@ class AppThemeProvider with ChangeNotifier {
 
   List<Widget> _createThemeWidget(BuildContext context) {
     List<Widget> widgets = List<Widget>();
-    for (var item in AppThemeProvider.themeColors.keys) {
+    for (var item in AppThemeProvider.localThemes.keys) {
       widgets.add(RadioListTile(
         groupValue: item,
-        value: _themeColorName,
+        value: _appThemeName,
         title: new Text(
           item,
-          style: TextStyle(color: AppThemeProvider.themeColors[item]),
+          style: TextStyle(color: AppThemeProvider.localThemes[item][0]),
         ),
         onChanged: (value) {
-          changeThemeColor(AppThemeProvider.themeColors.keys.toList().indexOf(item));
+          changeTheme(AppThemeProvider.localThemes.keys.toList().indexOf(item));
           Navigator.of(context).pop();
         },
       ));
@@ -51,8 +73,9 @@ class AppThemeProvider with ChangeNotifier {
 
   bool _isDark;
   bool _sysDark;
-  Color _themeColor;
-  String _themeColorName;
+  ThemeData _appTheme;
+  ThemeData _darkTheme;
+  String _appThemeName;
   void changeDark(bool value) {
     _isDark = value;
 
@@ -70,13 +93,17 @@ class AppThemeProvider with ChangeNotifier {
   get isDark => _isDark;
   get sysDark => _sysDark;
 
-  void changeThemeColor(int index) {
-    _themeColor = AppThemeProvider.themeColors.values.toList()[index];
-    _themeColorName = AppThemeProvider.themeColors.keys.toList()[index];
+  void changeTheme(int index) {
+    _appTheme = createThemeData(
+        AppThemeProvider.localThemes.values.toList()[index], false);
+    _darkTheme = createThemeData(
+        AppThemeProvider.localThemes.values.toList()[index], true);
+    _appThemeName = AppThemeProvider.localThemes.keys.toList()[index];
     notifyListeners();
     ConfigHelper.setAppTheme(index);
   }
 
-  get themeColor => _themeColor;
-  get themeColorName => _themeColorName;
+  get appTheme => _appTheme;
+  get darkTheme => _darkTheme;
+  get appThemeName => _appThemeName;
 }
