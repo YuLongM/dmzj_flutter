@@ -39,10 +39,12 @@ class _ComicDetailPageState extends State<ComicDetailPage>
   @override
   bool get wantKeepAlive => true;
   bool _indebug = false;
+  String coverUrl;
 
   @override
   void initState() {
     super.initState();
+    coverUrl = widget.coverUrl;
     loadData();
     _tabController = TabController(length: 3, vsync: this, initialIndex: 0);
   }
@@ -148,7 +150,7 @@ class _ComicDetailPageState extends State<ComicDetailPage>
                                 imageFilter: ImageFilter.blur(
                                     sigmaX: 10.0, sigmaY: 10.0),
                                 child: Utils.createCacheImage(
-                                    widget.coverUrl,
+                                    coverUrl,
                                     MediaQuery.of(context).size.width,
                                     detailExpandHeight,
                                     fit: BoxFit.cover),
@@ -260,7 +262,7 @@ class _ComicDetailPageState extends State<ComicDetailPage>
         SizedBox(
           width: 12,
         ),
-        Utils.createCover(widget.coverUrl, 100, 0.75, context),
+        Utils.createCover(coverUrl, 100, 0.75, context),
         SizedBox(
           width: 24,
         ),
@@ -603,6 +605,7 @@ class _ComicDetailPageState extends State<ComicDetailPage>
           'http://comic.cache/${widget.comicId}', responseBody,
           eTag: api, maxAge: Duration(days: 7), fileExtension: 'json');
       setState(() {
+        coverUrl = _detail.cover;
         _detail = detail;
         _loading = false;
       });
