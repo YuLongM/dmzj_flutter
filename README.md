@@ -11,5 +11,10 @@
 - [ ] 评论功能
 
 ## 截图
+##### 手机
 ![截图](https://github.com/tom8zds/dmzj_flutter/raw/master/ScreenShots/screenshots.png)
 
+##### 平板
+![平板](https://github.com/tom8zds/dmzj_flutter/raw/master/ScreenShots/padview.png)
+##### 双页阅读
+![双页阅读](https://github.com/tom8zds/dmzj_flutter/raw/master/ScreenShots/doublepage.png)
