@@ -32,12 +32,12 @@ class AppThemeProvider with ChangeNotifier {
   static Map<String, List<Color>> localThemes = {
     "胖次蓝": List.filled(1, Colors.blue),
     "姨妈红": List.filled(1, Colors.red),
-    "咸蛋黄": List.filled(1, Colors.yellow),
+    "咸蛋黄": List.filled(1, Colors.amber),
     "早苗绿": List.filled(1, Colors.green),
     "少女粉": List.filled(1, Colors.pink),
     "基佬紫": List.filled(1, Colors.purple),
     "朴素灰": List.filled(1, Colors.blueGrey),
-    "赛博朋克": [Colors.pink, Colors.cyan, Colors.amber, Color(0xffebe105)]
+    "赛博朋克": [Colors.pink, Color(0xff4bf8ff), Colors.amber, Color(0xffebe105)]
   };
 
   void showThemeDialog(BuildContext context) {
