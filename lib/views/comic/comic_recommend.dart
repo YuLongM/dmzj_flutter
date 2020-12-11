@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dmzj/helper/api.dart';
-import 'package:flutter_dmzj/helper/config_helper.dart';
 import 'package:flutter_dmzj/provider/user_info_provider.dart';
 import 'package:flutter_dmzj/helper/utils.dart';
 import 'package:flutter_dmzj/models/comic/comic_home_banner_item.dart';
@@ -81,13 +80,20 @@ class ComicRecommendState extends State<ComicRecommend>
                   width: widthMax,
                   child: AppBanner(
                       items: _banners
-                          .map<Widget>((i) => BannerImageItem(
-                                pic: i.cover,
-                                title: i.title,
-                                onTaped: () => Utils.openPage(
-                                    context, i.id, i.type,
-                                    url: i.url, title: i.title),
-                              ))
+                          .map<Widget>(
+                            (i) => BannerImageItem(
+                              pic: i.cover,
+                              title: i.title,
+                              onTaped: () {
+                                if (i.url.length == 0)
+                                  return Utils.openPage(context, i.id, i.type,
+                                      url: i.cover, title: i.title);
+                                else
+                                  return Utils.openPage(context, i.id, i.type,
+                                      url: i.url, title: i.title);
+                              },
+                            ),
+                          )
                           .toList()),
                 ),
                 Provider.of<AppUserInfoProvider>(context).isLogin

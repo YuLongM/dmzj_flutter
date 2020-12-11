@@ -24,8 +24,8 @@ import 'package:share/share.dart';
 
 class ComicDetailPage extends StatefulWidget {
   final int comicId;
-  final String coverUrl;
-  ComicDetailPage(this.comicId, this.coverUrl, {Key key}) : super(key: key);
+  final String _coverUrl;
+  ComicDetailPage(this.comicId, this._coverUrl, {Key key}) : super(key: key);
 
   @override
   _ComicDetailPageState createState() => _ComicDetailPageState();
@@ -39,12 +39,12 @@ class _ComicDetailPageState extends State<ComicDetailPage>
   @override
   bool get wantKeepAlive => true;
   bool _indebug = false;
-  String coverUrl;
+  String _coverUrl;
 
   @override
   void initState() {
     super.initState();
-    coverUrl = widget.coverUrl;
+    _coverUrl = widget._coverUrl;
     loadData();
     _tabController = TabController(length: 3, vsync: this, initialIndex: 0);
   }
@@ -150,7 +150,7 @@ class _ComicDetailPageState extends State<ComicDetailPage>
                                 imageFilter: ImageFilter.blur(
                                     sigmaX: 10.0, sigmaY: 10.0),
                                 child: Utils.createCacheImage(
-                                    coverUrl,
+                                    _coverUrl,
                                     MediaQuery.of(context).size.width,
                                     detailExpandHeight,
                                     fit: BoxFit.cover),
@@ -262,7 +262,7 @@ class _ComicDetailPageState extends State<ComicDetailPage>
         SizedBox(
           width: 12,
         ),
-        Utils.createCover(coverUrl, 100, 0.75, context),
+        Utils.createCover(_coverUrl, 100, 0.75, context),
         SizedBox(
           width: 24,
         ),
@@ -605,7 +605,7 @@ class _ComicDetailPageState extends State<ComicDetailPage>
           'http://comic.cache/${widget.comicId}', responseBody,
           eTag: api, maxAge: Duration(days: 7), fileExtension: 'json');
       setState(() {
-        coverUrl = _detail.cover;
+        _coverUrl = detail.cover;
         _detail = detail;
         _loading = false;
       });
