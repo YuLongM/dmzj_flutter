@@ -654,34 +654,54 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
     if (index > 0 && index <= pageCount) {
       return PhotoViewGalleryPageOptions.customChild(
         //filterQuality: FilterQuality.high,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            (2 * index - 1 < _detail.picnum)
-                ? Flexible(
-                    child: Image(
-                      filterQuality: FilterQuality.high,
-                      image: CachedNetworkImageProvider(
-                        _detail.page_url[2 * index - 1],
-                        headers: {"Referer": "http://www.dmzj.com/"},
-                      ),
-                    ),
-                  )
-                : Container(),
-            SizedBox(
-              width: 2,
-            ),
-            Flexible(
-              child: Image(
-                filterQuality: FilterQuality.high,
-                image: CachedNetworkImageProvider(
-                  _detail.page_url[2 * index - 2],
-                  headers: {"Referer": "http://www.dmzj.com/"},
+        child: Provider.of<ReaderConfigProvider>(context).comicReadReverse
+            ? Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                (2 * index - 1 < _detail.picnum)
+                    ? Flexible(
+                        child: Image(
+                          filterQuality: FilterQuality.high,
+                          image: CachedNetworkImageProvider(
+                            _detail.page_url[2 * index - 1],
+                            headers: {"Referer": "http://www.dmzj.com/"},
+                          ),
+                        ),
+                      )
+                    : Container(),
+                SizedBox(
+                  width: 2,
                 ),
-              ),
-            ),
-          ],
-        ),
+                Flexible(
+                  child: Image(
+                    filterQuality: FilterQuality.high,
+                    image: CachedNetworkImageProvider(
+                      _detail.page_url[2 * index - 2],
+                      headers: {"Referer": "http://www.dmzj.com/"},
+                    ),
+                  ),
+                ),
+              ])
+            : Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                Flexible(
+                  child: Image(
+                    filterQuality: FilterQuality.high,
+                    image: CachedNetworkImageProvider(
+                      _detail.page_url[2 * index - 2],
+                      headers: {"Referer": "http://www.dmzj.com/"},
+                    ),
+                  ),
+                ),
+                (2 * index - 1 < _detail.picnum)
+                    ? Flexible(
+                        child: Image(
+                          filterQuality: FilterQuality.high,
+                          image: CachedNetworkImageProvider(
+                            _detail.page_url[2 * index - 1],
+                            headers: {"Referer": "http://www.dmzj.com/"},
+                          ),
+                        ),
+                      )
+                    : Container(),
+              ]),
         initialScale: PhotoViewComputedScale.contained,
         minScale: PhotoViewComputedScale.contained,
         maxScale: PhotoViewComputedScale.covered * 4.1,
