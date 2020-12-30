@@ -39,12 +39,13 @@ class NovelRecommendState extends State<NovelRecommend>
     }
   }
 
-  double getWidth() {
-    var width = MediaQuery.of(context).size.width;
-    if (width > 600) {
-      width = 600;
-    }
-    return (width - 24) / 3 - 32;
+  double getRatio() {
+    var width = MediaQuery.of(context).size.shortestSide;
+    double s_width = (width - 24) / 3 - 32;
+
+    double s_ratio = s_width / ((s_width * (360 / 270)) + 36);
+
+    return s_ratio;
   }
 
   @override
@@ -80,23 +81,22 @@ class NovelRecommendState extends State<NovelRecommend>
                       _getItem("最近更新", _new,
                           icon: Icon(Icons.chevron_right, color: Colors.grey),
                           needSubTitle: false,
-                          ratio: getWidth() / ((getWidth() * (360 / 270)) + 28),
+                          ratio: getRatio(),
                           ontap: () => Utils.changeNovelHomeTabIndex.fire(1)),
                       _getItem(
                         "动画进行时",
                         _animeIng,
-                        ratio: getWidth() / ((getWidth() * (360 / 270)) + 44),
+                        ratio: getRatio(),
                       ),
                       _getItem(
                         "即将动画化",
                         _anime,
-                        ratio: getWidth() / ((getWidth() * (360 / 270)) + 44),
+                        ratio: getRatio(),
                       ),
                       Container(
                         width: MediaQuery.of(context).size.width,
                         child: _getItem("经典必看", _hot,
-                            ratio:
-                                getWidth() / ((getWidth() * (360 / 270)) + 44),
+                            ratio: getRatio(),
                             count: 6 ~/
                                 (2 - MediaQuery.of(context).orientation.index)),
                       ),
@@ -129,22 +129,18 @@ class NovelRecommendState extends State<NovelRecommend>
                   _getItem("最近更新", _new,
                       icon: Icon(Icons.chevron_right, color: Colors.grey),
                       needSubTitle: false,
-                      ratio: getWidth() / ((getWidth() * (360 / 270)) + 28),
+                      ratio: getRatio(),
                       ontap: () => Utils.changeNovelHomeTabIndex.fire(1)),
                   _getItem(
                     "动画进行时",
                     _animeIng,
-                    ratio: getWidth() / ((getWidth() * (360 / 270)) + 44),
+                    ratio: getRatio(),
                   ),
-                  _getItem(
-                    "即将动画化",
-                    _anime,
-                    ratio: getWidth() / ((getWidth() * (360 / 270)) + 44),
-                  ),
+                  _getItem("即将动画化", _anime, ratio: getRatio()),
                   _getItem(
                     "经典必看",
                     _hot,
-                    ratio: getWidth() / ((getWidth() * (360 / 270)) + 44),
+                    ratio: getRatio(),
                   ),
                   Container(
                     width: double.infinity,

@@ -50,19 +50,21 @@ class ComicRecommendState extends State<ComicRecommend>
     }
   }
 
-  double getWidth() {
-    var width = MediaQuery.of(context).size.width;
-    return (width - 24) / 3 - 32;
-  }
-
-  double getWidth2() {
-    var width = MediaQuery.of(context).size.width;
-    return (width - 16) / 2 - 32;
+  double getRatio(bool orentation) {
+    var width = MediaQuery.of(context).size.shortestSide;
+    double s_width = (width - 24) / 3 - 32;
+    double w_width = (width - 16) / 2 - 32;
+    double s_ratio = s_width / ((s_width * (360 / 270)) + 36);
+    double w_ratio = w_width / ((w_width * (170 / 320)) + 36);
+    if (orentation) {
+      return s_ratio;
+    } else {
+      return w_ratio;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    print(MediaQuery.of(context).size.toString());
     super.build(context);
     double widthMax = MediaQuery.of(context).size.width /
         (1 + MediaQuery.of(context).orientation.index);
@@ -86,10 +88,10 @@ class ComicRecommendState extends State<ComicRecommend>
                               title: i.title,
                               onTaped: () {
                                 if (i.url.length == 0)
-                                  return Utils.openPage(context, i.id, i.type,
+                                  Utils.openPage(context, i.id, i.type,
                                       url: i.cover, title: i.title);
                                 else
-                                  return Utils.openPage(context, i.id, i.type,
+                                  Utils.openPage(context, i.id, i.type,
                                       url: i.url, title: i.title);
                               },
                             ),
@@ -102,7 +104,7 @@ class ComicRecommendState extends State<ComicRecommend>
                         _mySub,
                         icon: Icon(Icons.chevron_right, color: Colors.grey),
                         ontap: () => Utils.openSubscribePage(context),
-                        ratio: getWidth() / ((getWidth() * (360 / 270)) + 24),
+                        ratio: getRatio(true),
                       )
                     : Container(
                         width: widthMax,
@@ -134,17 +136,17 @@ class ComicRecommendState extends State<ComicRecommend>
                 _getItem(
                   "近期必看",
                   _recommend,
-                  ratio: getWidth() / ((getWidth() * (360 / 270)) + 36),
+                  ratio: getRatio(true),
                 ),
                 _getItem2("猜你喜欢", _like,
                     icon: Icon(Icons.refresh, color: Colors.grey),
-                    ratio: getWidth() / ((getWidth() * (360 / 270)) + 36),
+                    ratio: getRatio(true),
                     ontap: () async => await loadLike()),
                 Container(
                   width: MediaQuery.of(context).size.width,
                   child: _getItem("热门连载", _hot,
                       icon: Icon(Icons.refresh, color: Colors.grey),
-                      ratio: getWidth() / ((getWidth() * (360 / 270)) + 36),
+                      ratio: getRatio(true),
                       ontap: () => loadHot(),
                       count:
                           6 ~/ (2 - MediaQuery.of(context).orientation.index)),
@@ -154,7 +156,7 @@ class ComicRecommendState extends State<ComicRecommend>
                     imgHeight: 170,
                     imgWidth: 320,
                     count: 2,
-                    ratio: getWidth2() / ((getWidth2() * (170 / 320)) + 32),
+                    ratio: getRatio(false),
                     icon: Icon(Icons.chevron_right, color: Colors.grey),
                     ontap: () => Utils.changeComicHomeTabIndex.fire(4)),
                 _getItem(
@@ -164,16 +166,16 @@ class ComicRecommendState extends State<ComicRecommend>
                   imgHeight: 170,
                   imgWidth: 320,
                   count: 2,
-                  ratio: getWidth2() / ((getWidth2() * (170 / 320)) + 32),
+                  ratio: getRatio(false),
                 ),
                 _getItem("动画专区", _anime,
                     icon: Icon(Icons.chevron_right, color: Colors.grey),
-                    ratio: getWidth() / ((getWidth() * (360 / 270)) + 36),
+                    ratio: getRatio(true),
                     ontap: () =>
                         Utils.openPage(context, 17192, 11, title: "动画")),
                 _getItem2("最新上架", _new,
                     icon: Icon(Icons.chevron_right, color: Colors.grey),
-                    ratio: getWidth() / ((getWidth() * (360 / 270)) + 36),
+                    ratio: getRatio(true),
                     ontap: () => Utils.changeComicHomeTabIndex.fire(1)),
               ],
             ),
@@ -258,43 +260,43 @@ class ComicRecommendState extends State<ComicRecommend>
             (1 + MediaQuery.of(context).orientation.index) -
         16;
     return Offstage(
-        offstage: items == null || items.length == 0,
-        child: Padding(
-          padding: EdgeInsets.all(8),
-          child: Container(
-            padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
-            constraints: BoxConstraints(maxWidth: widthMax),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                _getTitle(title, icon: icon, ontap: ontap),
-                SizedBox(
-                  height: 4.0,
-                ),
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: items.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: count,
-                      crossAxisSpacing: 4.0,
-                      mainAxisSpacing: 4.0,
-                      childAspectRatio: ratio),
-                  itemBuilder: (context, i) => Utils.createCoverWidget(
-                      items[i].id,
-                      items[i].type,
-                      items[i].cover,
-                      items[i].title,
-                      context,
-                      author: needSubTitle ? items[i].authors : "",
-                      width: imgWidth,
-                      height: imgHeight),
-                ),
-              ],
-            ),
+      offstage: items == null || items.length == 0,
+      child: Padding(
+        padding: EdgeInsets.all(8),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+          constraints: BoxConstraints(maxWidth: widthMax),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              _getTitle(title, icon: icon, ontap: ontap),
+              SizedBox(
+                height: 4.0,
+              ),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: items.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: count,
+                    crossAxisSpacing: 4.0,
+                    mainAxisSpacing: 4.0,
+                    childAspectRatio: ratio),
+                itemBuilder: (context, i) => Utils.createCoverWidget(
+                    items[i].id,
+                    items[i].type,
+                    items[i].cover,
+                    items[i].title,
+                    context,
+                    author: needSubTitle ? items[i].authors : "",
+                    width: imgWidth,
+                    height: imgHeight),
+              ),
+            ],
           ),
-        ));
+        ),
+      ),
+    );
   }
 
   Widget _getTitle(String title, {Icon icon, Function ontap}) {
