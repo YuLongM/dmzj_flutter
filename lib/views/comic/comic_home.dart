@@ -1,11 +1,13 @@
 import 'dart:ui';
 
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dmzj/helper/utils.dart';
 import 'package:flutter_dmzj/views/comic/comic_category.dart';
 import 'package:flutter_dmzj/views/comic/comic_rank.dart';
 import 'package:flutter_dmzj/views/comic/comic_recommend.dart';
 import 'package:flutter_dmzj/views/comic/comic_search.dart';
+import 'package:flutter_dmzj/views/comic/comic_search.dart.bak';
 import 'package:flutter_dmzj/views/comic/comic_special.dart';
 import 'package:flutter_dmzj/views/comic/comic_update.dart';
 
@@ -51,12 +53,29 @@ class _ComicHomePageState extends State<ComicHomePage>
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'comic_float',
-        child: Icon(Icons.search),
-        tooltip: "搜索",
-        onPressed: () {
-          showSearch(context: context, delegate: ComicSearchBarDelegate());
+      floatingActionButton: OpenContainer(
+        transitionType: ContainerTransitionType.fade,
+        openBuilder: (BuildContext context, VoidCallback _) {
+          return ComicSearchPage();
+        },
+        closedElevation: 6.0,
+        closedShape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(
+            Radius.circular(56.0 / 2),
+          ),
+        ),
+        closedColor: Theme.of(context).colorScheme.secondary,
+        closedBuilder: (BuildContext context, VoidCallback openContainer) {
+          return SizedBox(
+            height: 56.0,
+            width: 56.0,
+            child: Center(
+              child: Icon(
+                Icons.search,
+                color: Theme.of(context).colorScheme.onSecondary,
+              ),
+            ),
+          );
         },
       ),
       body: TabBarView(

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dmzj/provider/download_list_provider.dart';
@@ -148,6 +149,7 @@ class _MyHomePageState extends State<MyHomePage>
     PersonalPage()
   ];
   int _index = 0;
+  int _preindex = 0;
 
   @override
   void initState() {
@@ -221,6 +223,7 @@ class _MyHomePageState extends State<MyHomePage>
           selectedItemColor: Theme.of(context).buttonColor,
           onTap: (index) {
             setState(() {
+              _preindex = _index;
               if (index == 1 && newsPage == null) {
                 newsPage = NewsHomePage();
                 pages[1] = newsPage;
@@ -255,10 +258,23 @@ class _MyHomePageState extends State<MyHomePage>
             ),
           ],
         ),
-        body: IndexedStack(
-          index: _index,
-          children: pages,
-        ), // This trailing comma makes auto-formatting nicer for build methods.
+        body: PageTransitionSwitcher(
+          duration: const Duration(milliseconds: 300),
+          reverse: _preindex > _index,
+          transitionBuilder: (
+            Widget child,
+            Animation<double> animation,
+            Animation<double> secondaryAnimation,
+          ) {
+            return SharedAxisTransition(
+              child: child,
+              animation: animation,
+              secondaryAnimation: secondaryAnimation,
+              transitionType: SharedAxisTransitionType.horizontal,
+            );
+          },
+          child: pages[_index],
+        ),
       ),
     );
   }

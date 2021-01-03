@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:common_utils/common_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_dmzj/helper/api.dart';
 import 'package:flutter_dmzj/helper/config_helper.dart';
@@ -37,11 +38,13 @@ class _NovelDetailPageState extends State<NovelDetailPage>
   bool get wantKeepAlive => true;
   TabController _tabController;
   int historyChapter = 0;
+  String _coverUrl;
 
   @override
   void initState() {
     _tabController = TabController(length: 3, vsync: this);
     super.initState();
+    _coverUrl = widget.coverUrl ?? "";
     loadData().whenComplete(() {
       setState(() {
         _loading = false;
@@ -145,11 +148,13 @@ class _NovelDetailPageState extends State<NovelDetailPage>
                               child: ImageFiltered(
                                 imageFilter: ImageFilter.blur(
                                     sigmaX: 10.0, sigmaY: 10.0),
-                                child: Utils.createCacheImage(
-                                    widget.coverUrl,
-                                    MediaQuery.of(context).size.width,
-                                    detailExpandHeight,
-                                    fit: BoxFit.cover),
+                                child: _coverUrl.isNotEmpty
+                                    ? Utils.createCacheImage(
+                                        _coverUrl,
+                                        MediaQuery.of(context).size.width,
+                                        detailExpandHeight,
+                                        fit: BoxFit.cover)
+                                    : Container(),
                               ),
                             ),
                           ),
@@ -249,7 +254,9 @@ class _NovelDetailPageState extends State<NovelDetailPage>
         SizedBox(
           width: 12,
         ),
-        Utils.createCover(widget.coverUrl, 100, 0.75, context),
+        _coverUrl.isNotEmpty
+            ? Utils.createCover(_coverUrl, 100, 0.75, context)
+            : Container(),
         SizedBox(
           width: 24,
         ),
@@ -470,8 +477,9 @@ class _NovelDetailPageState extends State<NovelDetailPage>
         return;
       }
       await _cacheManager.putFile(api, responseBody);
-
+      print(detail.cover);
       setState(() {
+        _coverUrl = detail.cover;
         _detail = detail;
       });
     } catch (e) {

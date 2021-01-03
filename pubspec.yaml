@@ -55,6 +55,7 @@ dependencies:
   update_app: ^0.1.5
   dio: ^3.0.10
   modal_bottom_sheet: ^1.0.0+1
+  animations: ^1.1.2
 
 
 

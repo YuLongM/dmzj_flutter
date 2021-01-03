@@ -62,57 +62,50 @@ class _CommentWidgetState extends State<CommentWidget>
     }
     return EasyRefresh.custom(
       topBouncing: false,
-      header: MaterialHeader(),
+      // header: MaterialHeader(),
       footer: MaterialFooter(),
       slivers: [
-        SliverToBoxAdapter(
-          child: Container(
-            padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Expanded(
-                  child: Text(
-                    text + "评论" + "($_commentCount)",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
+        SliverAppBar(
+          pinned: true,
+          title: Text(
+            text + "评论" + "($_commentCount)",
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          actions: [
+            PopupMenuButton<bool>(
+              child: Container(
+                  height: 36,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text(_isHot ? "热门评论" : "最新评论"),
+                      Icon(
+                        Icons.arrow_drop_down,
+                        color: Colors.grey,
+                      )
+                    ],
+                  )),
+              onSelected: (v) async {
+                setState(() {
+                  _isHot = v;
+                });
+                _page = 1;
+                await loadData();
+              },
+              itemBuilder: (c) => [
+                CheckedPopupMenuItem<bool>(
+                  child: Text("最新评论"),
+                  value: false,
+                  checked: !_isHot,
                 ),
-                PopupMenuButton<bool>(
-                  child: Container(
-                      height: 36,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Text(_isHot ? "热门评论" : "最新评论"),
-                          Icon(
-                            Icons.arrow_drop_down,
-                            color: Colors.grey,
-                          )
-                        ],
-                      )),
-                  onSelected: (v) async {
-                    setState(() {
-                      _isHot = v;
-                    });
-                    _page = 1;
-                    await loadData();
-                  },
-                  itemBuilder: (c) => [
-                    CheckedPopupMenuItem<bool>(
-                      child: Text("最新评论"),
-                      value: false,
-                      checked: !_isHot,
-                    ),
-                    CheckedPopupMenuItem<bool>(
-                      child: Text("最热评论"),
-                      value: true,
-                      checked: _isHot,
-                    )
-                  ],
+                CheckedPopupMenuItem<bool>(
+                  child: Text("最热评论"),
+                  value: true,
+                  checked: _isHot,
                 )
               ],
-            ),
-          ),
+            )
+          ],
         ),
         _list.length != 0
             ? SliverList(
@@ -132,10 +125,10 @@ class _CommentWidgetState extends State<CommentWidget>
                 ),
               )
       ],
-      onRefresh: () async {
-        _page = 1;
-        await loadData();
-      },
+      // onRefresh: () async {
+      //   _page = 1;
+      //   await loadData();
+      // },
       onLoad: loadData,
     );
   }
