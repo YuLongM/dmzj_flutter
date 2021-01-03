@@ -31,7 +31,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:http/http.dart' as http;
 
-import 'user_helper.dart';
+enum ViewState { loading, noCopyright, fail, idle }
 
 class Utils {
   static EventBus changeComicHomeTabIndex = EventBus();
