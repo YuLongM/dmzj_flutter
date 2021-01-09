@@ -238,6 +238,7 @@ class Utils {
     String status = "",
     double width = 270,
     double height = 360,
+    bool isLocal = false,
   }) {
     return InkWell(
       onTap: () {
@@ -259,7 +260,9 @@ class Utils {
                     width: 80,
                     child: AspectRatio(
                       aspectRatio: width / height,
-                      child: Utils.createCacheImage(cover, 270, 360),
+                      child: isLocal
+                          ? Image.file(File(cover))
+                          : Utils.createCacheImage(cover, 270, 360),
                     ),
                   )),
               SizedBox(

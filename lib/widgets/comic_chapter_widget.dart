@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dmzj/helper/utils.dart';
 import 'package:flutter_dmzj/models/comic/comic_detail_model.dart';
+import 'package:flutter_dmzj/views/download/download_models.dart';
 
 class ComicChapterView extends StatefulWidget {
   final ComicDetail detail;
@@ -21,10 +22,12 @@ class _ComicChapterViewState extends State<ComicChapterView>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
+  List<ChapterDownloadModel> _list = [];
 
   @override
   void initState() {
     super.initState();
+    initLocalList();
   }
 
   @override
@@ -38,6 +41,7 @@ class _ComicChapterViewState extends State<ComicChapterView>
             itemCount: widget.detail.chapters.length,
             itemBuilder: (ctx, i) {
               var f = widget.detail.chapters[i];
+
               dataReverse(f);
               return Container(
                 padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
@@ -85,12 +89,26 @@ class _ComicChapterViewState extends State<ComicChapterView>
                           crossAxisSpacing: 8.0,
                           childAspectRatio: 6 / 2),
                       itemBuilder: (context, i) {
-                        return OutlineButton(
-                          borderSide: BorderSide(
-                              color:
-                                  f.data[i].chapter_id == widget.historyChapter
+                        print(_list.length);
+                        return OutlinedButton(
+                          style: ButtonStyle(
+                            backgroundColor:
+                                MaterialStateProperty.resolveWith<Color>(
+                                    (states) {
+                              if (_list.any((element) =>
+                                  element.chapterId == f.data[i].chapter_id))
+                                return Colors.green[200];
+                              else
+                                return Colors.transparent;
+                            }),
+                            side: MaterialStateProperty.resolveWith((states) {
+                              return BorderSide(
+                                  color: f.data[i].chapter_id ==
+                                          widget.historyChapter
                                       ? Theme.of(context).accentColor
-                                      : Colors.grey.withOpacity(0.4)),
+                                      : Colors.grey.withOpacity(0.4));
+                            }),
+                          ),
                           child: Text(
                             f.data[i].chapter_title,
                             maxLines: 1,
@@ -170,5 +188,15 @@ class _ComicChapterViewState extends State<ComicChapterView>
         widget.isSubscribe,
         widget.detail.chapters[0].data,
         widget.detail.chapters[0].data.last);
+  }
+
+  Future initLocalList() async {
+    var list = await DownloadHelper.getChaptersInComic(widget.detail.id);
+    list.forEach((element) {
+      print('${element.chapterName} ${element.state}');
+    });
+    setState(() {
+      _list = list;
+    });
   }
 }

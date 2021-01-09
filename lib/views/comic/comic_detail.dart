@@ -39,7 +39,7 @@ class _ComicDetailPageState extends State<ComicDetailPage>
   double detailExpandHeight = 150 + kToolbarHeight + 24;
   @override
   bool get wantKeepAlive => true;
-  bool _indebug = false;
+  bool _indebug = true;
   String _coverUrl;
   ViewState _state = ViewState.loading;
 

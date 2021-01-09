@@ -3,12 +3,11 @@ import 'dart:io';
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dmzj/provider/download_list_provider.dart';
 import 'package:flutter_dmzj/provider/reader_config_provider.dart';
 import 'package:flutter_dmzj/helper/config_helper.dart';
-import 'package:flutter_dmzj/database/comic_down.dart';
 import 'package:flutter_dmzj/database/comic_history.dart';
 import 'package:flutter_dmzj/views/comic/comic_home.dart';
+import 'package:flutter_dmzj/views/download/download_models.dart';
 import 'package:flutter_dmzj/views/settings/comic_reader_settings.dart';
 import 'package:flutter_dmzj/views/settings/novel_reader_settings.dart';
 import 'package:flutter_dmzj/views/user/login_page.dart';
@@ -55,7 +54,7 @@ void main() async {
         lazy: false,
       ),
       ChangeNotifierProvider(
-        create: (_) => DownloadList(),
+        create: (_) => Downloader(),
         lazy: false,
       )
     ],
@@ -79,7 +78,7 @@ void main() async {
 Future initDatabase() async {
   var databasesPath = await getDatabasesPath();
   // File(databasesPath+"/nsplayer.db").deleteSync();
-  var db = await openDatabase(databasesPath + "/comic_history.db", version: 1,
+  var db = await openDatabase(databasesPath + "/app.db", version: 1,
       onCreate: (Database _db, int version) async {
     await _db.execute('''
 create table $comicHistoryTable ( 
@@ -91,21 +90,16 @@ create table $comicHistoryTable (
 
     await _db.execute('''
 create table $comicDownloadTableName (
-$comicDownloadColumnChapterID integer primary key not null,
+$comicDownloadColumnChapterId integer primary key not null,
 $comicDownloadColumnChapterName text not null,
-$comicDownloadColumnComicID integer not null,
+$comicDownloadColumnComicId integer not null,
 $comicDownloadColumnComicName text not null,
 $comicDownloadColumnStatus integer not null,
-$comicDownloadColumnVolume text not null,
-$comicDownloadColumnPage integer ,
-$comicDownloadColumnCount integer ,
-$comicDownloadColumnSavePath text ,
-$comicDownloadColumnUrls text )
-''');
+$comicDownloadColumnVolume integer not null)''');
   });
 
   ComicHistoryHelper.db = db;
-  ComicDownloadProvider.db = db;
+  DownloadHelper.db = db;
 }
 
 class MyApp extends StatelessWidget {

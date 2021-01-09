@@ -1,15 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dmzj/helper/api.dart';
 import 'package:flutter_dmzj/helper/utils.dart';
 import 'package:flutter_dmzj/models/comic/comic_detail_model.dart';
+import 'package:flutter_dmzj/widgets/error_pages.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
-import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+
+import 'download_models.dart';
 
 class LocalComicPage extends StatefulWidget {
   LocalComicPage({Key key}) : super(key: key);
@@ -25,32 +25,44 @@ class _LocalComicPageState extends State<LocalComicPage> {
 
   @override
   void initState() {
-    initDir().whenComplete(() {
+    super.initState();
+    loadData().whenComplete(() {
       setState(() {
         _loading = false;
       });
     });
-    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: _loading && _list.length != 0
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
+      body: _loading
+          ? loadingPage(context)
           : EasyRefresh(
               child: ListView.builder(
                 itemBuilder: (context, index) {
-                  return Utils.createDetailWidget(_list[index].id, 1,
-                      _list[index].cover, _list[index].title, context);
+                  return Utils.createDetailWidget(
+                      _list[index].id,
+                      1,
+                      '$downloadPath/${_list[index].id}/cover.jpg',
+                      _list[index].title,
+                      context,
+                      isLocal: true);
                 },
                 itemCount: _list.length,
               ),
             ),
     );
+  }
+
+  Future loadData() async {
+    await initDir();
+    List<ComicDownloadModel> comicList = await DownloadHelper.getAllComics();
+    List<ChapterDownloadModel> chapterList =
+        await DownloadHelper.getAllDownloads();
+    print(chapterList.length);
+    await loadDetail(comicList);
   }
 
   Future initDir() async {
@@ -59,32 +71,23 @@ class _LocalComicPageState extends State<LocalComicPage> {
     assert(await downloadDir.exists() == true);
     downloadPath = downloadDir.path;
     print(downloadPath);
-    downloadDir
-        .list(recursive: false)
-        .toList()
-        .then((value) => value.forEach((item) async {
-              int id = int.parse(getDirName(item.path));
-              print(id);
-              await loadDetail(id);
-            }));
+    // downloadDir
+    //     .list(recursive: false)
+    //     .toList()
+    //     .then((value) => value.forEach((item) async {
+    //           int id = int.parse(getDirName(item.path));
+    //           print(id);
+    //           await loadDetail(id);
+    //         }));
   }
 
-  Future loadDetail(int comicId) async {
-    try {
-      var api = Api.comicDetail(comicId);
-      Uint8List responseBody;
-      var response = await http.get(Api.comicDetail(comicId));
-      responseBody = response.bodyBytes;
-      var responseStr = utf8.decode(responseBody);
-      var jsonMap = jsonDecode(responseStr);
-
+  Future loadDetail(List<ComicDownloadModel> comicList) async {
+    comicList.forEach((element) {
+      File metaFile = File('$downloadPath/${element.comicId}/metadata');
+      var jsonMap = jsonDecode(metaFile.readAsStringSync());
       ComicDetail detail = ComicDetail.fromJson(jsonMap);
-      setState(() {
-        _list.add(detail);
-      });
-    } catch (e) {
-      print(e);
-    }
+      _list.add(detail);
+    });
   }
 
   String getDirName(String dir) {

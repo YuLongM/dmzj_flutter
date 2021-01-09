@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_dmzj/helper/utils.dart';
 import 'package:flutter_dmzj/models/comic/comic_detail_model.dart';
-import 'package:flutter_dmzj/provider/download_list_provider.dart';
-import 'package:flutter_dmzj/views/download/downloader.dart';
+import 'package:flutter_dmzj/views/download/download_models.dart';
+import 'package:flutter_dmzj/widgets/error_pages.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 
@@ -18,33 +18,21 @@ class ComicDownloadPage extends StatefulWidget {
 class _ComicDownloadPageState extends State<ComicDownloadPage> {
   bool _selectAll = false;
   List<ComicDetailChapterItem> _ls = [];
-  DefaultCacheManager _cacheManager = DefaultCacheManager();
-  ComicDownloader _downloader;
+  Downloader _downloader;
   List<bool> downloadingState = [];
   List<bool> deleteState = [];
-  double _progress;
   bool _deleteMode = false;
+  ViewState state = ViewState.loading;
 
   @override
   Future<void> initState() {
     super.initState();
-    _ls = [];
-    for (var item in widget.detail.chapters) {
-      for (var item2 in item.data) {
-        item2.volume_name = item.title;
-        downloadingState.add(false);
-        deleteState.add(false);
-      }
-      _ls.addAll(item.data);
-    }
-    _downloader = ComicDownloader(widget.detail.id);
-    _downloader.progressBus.on<double>().listen((event) {
+    _downloader = Provider.of<Downloader>(context, listen: false);
+    initList().whenComplete(() {
       setState(() {
-        _progress = event;
+        state = ViewState.idle;
       });
     });
-    // downloadItem = new DownloadItem(
-    //     widget.detail.id, widget.detail.title, widget.detail.cover);
   }
 
   @override
@@ -54,6 +42,17 @@ class _ComicDownloadPageState extends State<ComicDownloadPage> {
 
   @override
   Widget build(BuildContext context) {
+    switch (state) {
+      case ViewState.loading:
+        return loadingPage(context);
+      case ViewState.idle:
+        return idlePage();
+      default:
+        return failPage(context, initList);
+    }
+  }
+
+  Widget idlePage() {
     return Scaffold(
       appBar: AppBar(
         title: Text('选择章节'),
@@ -99,11 +98,6 @@ class _ComicDownloadPageState extends State<ComicDownloadPage> {
                     ? Colors.grey
                     : Theme.of(context).textTheme.bodyText1.color),
           ),
-          subtitle: downloadingState[i]
-              ? LinearProgressIndicator(
-                  value: _progress,
-                )
-              : Text(_ls[i].downloaded ? '已下载' : '未下载'),
           onChanged: (e) {
             setState(() {
               if (_deleteMode) {
@@ -130,47 +124,22 @@ class _ComicDownloadPageState extends State<ComicDownloadPage> {
             //comic-version(连载)-chapter
             //在文件夹中下载
             //或者使用缓存器直接缓存
-            // for (int i = 0; i < _ls.length; i++) {
-            //   if (_ls[i].selected) {
-            //     setState(() {
-            //       downloadingState[i] = true;
-            //     });
-            //     await _downloader.startDownload(_ls[i]).whenComplete(() {
-            //       setState(() {
-            //         _ls[i].downloaded = true;
-            //         _ls[i].selected = false;
-            //         downloadingState[i] = false;
-            //       });
-            //     });
-            //   }
-            // }
-            DownloadItem downloadItem = new DownloadItem(
-                widget.detail.id, widget.detail.title, widget.detail.cover);
+            _downloader.downloadMeta(widget.detail.id);
+
             for (int i = 0; i < _ls.length; i++) {
               if (_ls[i].selected) {
-                // setState(() {
-                //   downloadingState[i] = true;
-                // });
-                // await _downloader.startDownload(_ls[i]).whenComplete(() {
-                //   setState(() {
-                //     _ls[i].downloaded = true;
-                //     _ls[i].selected = false;
-                //     downloadingState[i] = false;
-                //   });
-                // });
-                ListChapterItem item = ListChapterItem(_ls[i].chapter_id,
-                    _ls[i].chapter_title, _ls[i].chapter_order);
-                downloadItem.insertChapter(item);
+                ChapterDownloadModel chapter = ChapterDownloadModel(
+                    widget.detail.id,
+                    widget.detail.title,
+                    _ls[i].chapter_id,
+                    _ls[i].chapter_title,
+                    _ls[i].volume_name);
+                _downloader.addToQueue(chapter);
               }
             }
-            downloadItem.sortList();
-            print(widget.detail.cover);
-            Provider.of<DownloadList>(context, listen: false)
-                .insertDownload(downloadItem);
-            print(downloadItem.coverUrl);
-            print(Provider.of<DownloadList>(context, listen: false)
-                .downloadList
-                .length);
+
+            print('加入下载列队完成');
+            _downloader.startDownload();
           },
         ),
         secondChild: FloatingActionButton(
@@ -189,7 +158,7 @@ class _ComicDownloadPageState extends State<ComicDownloadPage> {
               int error = 0;
               for (int i = 0; i < _ls.length; i++) {
                 if (deleteState[i]) {
-                  if (await _downloader.delete(_ls[i]) == 0) {
+                  if (await _downloader.deleteFromQueue(_ls[i].chapter_id)) {
                     success += 1;
                     setState(() {
                       _ls[i].downloaded = false;
@@ -208,5 +177,27 @@ class _ComicDownloadPageState extends State<ComicDownloadPage> {
         duration: Duration(milliseconds: 200),
       ),
     );
+  }
+
+  Future<void> initList() async {
+    _ls = [];
+    List<ChapterDownloadModel> downloadList =
+        await DownloadHelper.getChaptersInComic(widget.detail.id);
+    for (var item in widget.detail.chapters) {
+      for (var item2 in item.data) {
+        item2.volume_name = item.title;
+        ChapterDownloadModel temp = downloadList.firstWhere(
+            (element) => element.chapterId == item2.chapter_id,
+            orElse: () => null);
+        if (temp != null) {
+          downloadingState.add(true);
+          item2.downloaded = true;
+        } else
+          downloadingState.add(false);
+
+        deleteState.add(false);
+      }
+      _ls.addAll(item.data);
+    }
   }
 }

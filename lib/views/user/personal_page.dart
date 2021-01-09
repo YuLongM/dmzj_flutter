@@ -3,6 +3,7 @@ import 'package:flutter_dmzj/database/app_theme_provider.dart';
 import 'package:flutter_dmzj/provider/user_info_provider.dart';
 import 'package:flutter_dmzj/helper/utils.dart';
 import 'package:flutter_dmzj/views/download/download_list_view.dart';
+import 'package:flutter_dmzj/views/download/local_comic.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 // import 'package:flutter_dmzj/views/download/local_comic.dart';
 import 'package:provider/provider.dart';
@@ -157,6 +158,32 @@ class _PersonalPageState extends State<PersonalPage> {
                                   MaterialPageRoute(
                                       builder: (BuildContext context) =>
                                           DownloadListView()),
+                                );
+                              }
+                              Fluttertoast.showToast(msg: '敬请期待');
+                            },
+                          ),
+                          ListTile(
+                            title: Text("本地漫画"),
+                            trailing:
+                                Icon(Icons.chevron_right, color: Colors.grey),
+                            leading: Icon(Icons.file_download),
+                            onTap: () {
+                              // Navigator.push(
+                              //   context,
+                              //   MaterialPageRoute(
+                              //     builder: (BuildContext context) =>
+                              //         LocalComicPage(),
+                              //   ),
+                              // )
+                              bool inDebugMode = false;
+                              assert(inDebugMode = true);
+                              if (inDebugMode) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (BuildContext context) =>
+                                          LocalComicPage()),
                                 );
                               }
                               Fluttertoast.showToast(msg: '敬请期待');
