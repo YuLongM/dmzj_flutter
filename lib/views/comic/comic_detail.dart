@@ -17,6 +17,7 @@ import 'package:flutter_dmzj/database/comic_history.dart';
 import 'package:flutter_dmzj/views/download/comic_download.dart';
 import 'package:flutter_dmzj/views/other/comment_widget.dart';
 import 'package:flutter_dmzj/widgets/comic_chapter_widget.dart';
+import 'package:flutter_dmzj/widgets/error_pages.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
@@ -131,197 +132,16 @@ class _ComicDetailPageState extends State<ComicDetailPage>
   Widget createPage() {
     switch (_state) {
       case ViewState.loading:
-        return loadingPage();
+        return loadingPage(context);
       case ViewState.noCopyright:
-        return noCopyrightPage();
+        return noCopyrightPage(context);
       case ViewState.fail:
-        return failPage();
+        return failPage(context, loadData);
       case ViewState.idle:
-        return createDetail();
+        return idlePage();
       default:
-        return failPage();
+        return failPage(context, loadData);
     }
-  }
-
-  Widget loadingPage() {
-    return Scaffold(
-      body: Container(
-        height: MediaQuery.of(context).size.height,
-        child: Center(
-          child: CircularProgressIndicator(),
-        ),
-      ),
-    );
-  }
-
-  Widget noCopyrightPage() {
-    return Scaffold(
-      body: Container(
-        height: MediaQuery.of(context).size.height,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircleAvatar(
-                backgroundImage: AssetImage('assets/pika.png'),
-                backgroundColor: Colors.transparent,
-                radius: 56,
-              ),
-              SizedBox(
-                height: 8,
-              ),
-              Text(
-                '漫画走丢了\n   去别的地方\n找找吧',
-                style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.pink[100]),
-              ),
-              SizedBox(
-                height: 8,
-              ),
-              IconButton(
-                  icon: Icon(Icons.arrow_back),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  }),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget idlePage() {
-    return NestedScrollView(
-      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-        return <Widget>[
-          SliverOverlapAbsorber(
-            handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-            sliver: SliverAppBar(
-              pinned: true,
-              expandedHeight: detailExpandHeight,
-              automaticallyImplyLeading: true,
-              title: Text(_detail.title),
-              actions: <Widget>[
-                //屏蔽下载功能
-                _indebug
-                    ? IconButton(
-                        icon: Icon(Icons.cloud_download),
-                        onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (BuildContext context) =>
-                                      ComicDownloadPage(_detail)));
-                        })
-                    : Container(),
-                Provider.of<AppUserInfoProvider>(context).isLogin &&
-                        _isSubscribe
-                    ? IconButton(
-                        icon: Icon(Icons.favorite),
-                        onPressed: () async {
-                          var result = await UserHelper.comicSubscribe(
-                              widget.comicId,
-                              cancel: true);
-                          if (result) {
-                            setState(() {
-                              _isSubscribe = false;
-                            });
-                          }
-                        })
-                    : IconButton(
-                        icon: Icon(Icons.favorite_border),
-                        onPressed: () async {
-                          var result =
-                              await UserHelper.comicSubscribe(widget.comicId);
-                          if (result) {
-                            setState(() {
-                              _isSubscribe = true;
-                            });
-                          }
-                        }),
-                IconButton(
-                    icon: Icon(Icons.share),
-                    onPressed: () {
-                      Share.share(
-                          "${_detail.title}\r\nhttp://m.dmzj.com/info/${_detail.comic_py}.html");
-                    }),
-              ],
-              flexibleSpace: FlexibleSpaceBar(
-                collapseMode: CollapseMode.pin,
-                background: Stack(
-                  fit: StackFit.loose,
-                  children: [
-                    ClipRect(
-                      child: Container(
-                        width: MediaQuery.of(context).size.width,
-                        height: detailExpandHeight + getSafebar(),
-                        foregroundDecoration: BoxDecoration(
-                            color:
-                                Theme.of(context).shadowColor.withAlpha(100)),
-                        child: ImageFiltered(
-                            imageFilter:
-                                ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-                            child: Utils.createCacheImage(
-                                _coverUrl,
-                                MediaQuery.of(context).size.width,
-                                detailExpandHeight,
-                                fit: BoxFit.cover)),
-                      ),
-                    ),
-                    Positioned(
-                        top: getSafebar() + kToolbarHeight,
-                        child: Container(
-                            height: 150,
-                            width: MediaQuery.of(context).size.width,
-                            child: createHeader())),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ];
-      },
-      body: Builder(builder: (context) {
-        return CustomScrollView(
-          slivers: <Widget>[
-            SliverOverlapInjector(
-              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-            ),
-            SliverToBoxAdapter(child: createDetail()),
-          ],
-        );
-      }),
-    );
-  }
-
-  Widget failPage() {
-    return Scaffold(
-      body: Container(
-        height: MediaQuery.of(context).size.height,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/33.gif',
-                width: 200,
-              ),
-              Text(
-                '没有wifi !!!',
-                style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).accentColor),
-              ),
-              IconButton(
-                  icon: Icon(Icons.refresh_rounded), onPressed: loadData),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   Widget createHeader() {
@@ -379,7 +199,7 @@ class _ComicDetailPageState extends State<ComicDetailPage>
     );
   }
 
-  Widget createDetail() {
+  Widget idlePage() {
     return NestedScrollView(
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
