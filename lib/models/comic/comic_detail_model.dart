@@ -312,10 +312,11 @@ class ComicDetailChapterItem {
     _selected = e;
   }
 
-  bool _downloaded = false;
-  bool get downloaded => _downloaded;
-  set downloaded(e) {
-    _downloaded = e;
+  //0:not download, 1: in queue, 2:downloaded
+  int _downloadState = 0;
+  int get downloadState => _downloadState;
+  set downloadState(e) {
+    _downloadState = e;
   }
 
   ComicDetailChapterItem({

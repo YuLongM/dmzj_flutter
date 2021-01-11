@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
@@ -10,9 +9,8 @@ import 'package:flutter_dmzj/database/comic_down.dart';
 import 'package:flutter_dmzj/helper/api.dart';
 import 'package:flutter_dmzj/helper/config_helper.dart';
 import 'package:flutter_dmzj/models/comic/comic_chapter_detail.dart';
-import 'package:flutter_dmzj/models/comic/comic_detail_model.dart';
-import 'package:flutter_dmzj/models/comic/comic_specia_datail_model.dart';
-import 'package:flutter_dmzj/models/download/comic_download_model.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -38,10 +36,17 @@ class DownloadHelper {
     }
   }
 
-  static Future<bool> deleteDownload(int chapterId) async {
+  static Future<bool> deleteDownload(
+      int chapterId, String _downloadPath) async {
     try {
-      await db.delete(comicDownloadTableName,
-          where: '$comicDownloadColumnChapterId = ?', whereArgs: [chapterId]);
+      var item = await getDownload(chapterId);
+      if (item != null) {
+        var tempDir =
+            Directory('$_downloadPath/${item.comicId}/${item.chapterId}');
+        if (tempDir.existsSync()) await tempDir.delete(recursive: true);
+        await db.delete(comicDownloadTableName,
+            where: '$comicDownloadColumnChapterId = ?', whereArgs: [chapterId]);
+      }
       return true;
     } on Exception catch (e) {
       print(e);
@@ -80,12 +85,13 @@ class DownloadHelper {
   }
 
   static Future<List<ChapterDownloadModel>> getAllDownloads() async {
-    List<ChapterDownloadModel> maps = (await db.query(comicDownloadTableName,
+    List<ChapterDownloadModel> _list = (await db.query(comicDownloadTableName,
             where: '$comicDownloadColumnStatus != ?',
             whereArgs: [DownState.done.index]))
         .map<ChapterDownloadModel>((x) => ChapterDownloadModel.fromMap(x))
         .toList();
-    return maps;
+    print(_list.length);
+    return _list;
   }
 
   static Future<List<ComicDownloadModel>> getAllComics() async {
@@ -155,7 +161,7 @@ class ChapterDownloadModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future loadPages() async {
+  Future loadChapterMeta() async {
     var api = Api.comicChapterDetail(this.comicId, this.chapterId);
 
     if (ConfigHelper.getComicWebApi()) {
@@ -171,6 +177,12 @@ class ChapterDownloadModel extends ChangeNotifier {
       print(e);
       return;
     }
+  }
+
+  void storeChapterMeta(String downloadPath) {
+    File metaFile = File('$downloadPath/$comicId/$chapterId/metadata');
+
+    metaFile.writeAsStringSync(detail.toString());
   }
 
   Map<String, dynamic> toMap() {
@@ -196,15 +208,23 @@ class ChapterDownloadModel extends ChangeNotifier {
 }
 
 class Downloader extends ChangeNotifier {
-  Queue<ChapterDownloadModel> _waitingQueue = new Queue<ChapterDownloadModel>();
+  List<ChapterDownloadModel> _waitingQueue = new List<ChapterDownloadModel>();
+  List<ChapterDownloadModel> get waitingQueue => _waitingQueue;
   int _poolCount = 2;
   int _syncFlag = 0;
   static String _downloadPath;
   static final Options options =
       Options(headers: {"Referer": "http://www.dmzj.com/"});
+  final FlutterLocalNotificationsPlugin notifier =
+      FlutterLocalNotificationsPlugin();
 
   Downloader() {
     initDirectory();
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    final InitializationSettings initializationSettings =
+        InitializationSettings(android: initializationSettingsAndroid);
+    notifier.initialize(initializationSettings, onSelectNotification: null);
   }
 
   Future initQueue() async {
@@ -231,20 +251,41 @@ class Downloader extends ChangeNotifier {
 
   Future<bool> deleteFromQueue(int chapterId) async {
     try {
-      var result =
-          _waitingQueue.where((element) => element.chapterId == chapterId);
+      var result = _waitingQueue
+          .where((element) => element.chapterId == chapterId)
+          .toList();
+      bool deleteFlag = false;
       if (result.isNotEmpty) {
-        result.forEach((element) {
+        result.forEach((element) async {
           element.setState(DownState.pause);
           _waitingQueue.remove(element);
-          DownloadHelper.deleteDownload(element.chapterId);
+          await notifier.cancel(chapterId);
+          var tempDir = Directory(
+              '$_downloadPath/${element.comicId}/${element.chapterId}');
+          if (tempDir.existsSync()) await tempDir.delete(recursive: true);
         });
+
+        deleteFlag = true;
       }
-      return true;
+      if (await DownloadHelper.deleteDownload(chapterId, _downloadPath))
+        deleteFlag = true;
+
+      return deleteFlag;
     } catch (e) {
       print(e);
       return false;
     }
+  }
+
+  Future<bool> deleteAll() async {
+    pauseAll();
+    bool flag = true;
+    _waitingQueue.forEach((element) async {
+      if (!await deleteFromQueue(element.chapterId)) {
+        flag = false;
+      }
+    });
+    return flag;
   }
 
   Future<bool> downloadMeta(int comicId) async {
@@ -277,6 +318,22 @@ class Downloader extends ChangeNotifier {
     }
   }
 
+  void pauseAll() {
+    _waitingQueue.forEach((element) {
+      element.setState(DownState.pause);
+    });
+    Fluttertoast.showToast(msg: '全部暂停');
+  }
+
+  void resumeAll() {
+    _waitingQueue.forEach((element) {
+      if (element.state != DownState.downloading) {
+        element.setState(DownState.waiting);
+      }
+    });
+    Fluttertoast.showToast(msg: '全部开始');
+  }
+
   void startDownload() {
     int i = _waitingQueue.length - 1;
     while (_syncFlag > _poolCount && i > 0) {
@@ -290,56 +347,126 @@ class Downloader extends ChangeNotifier {
       if (_waitingQueue.elementAt(i).state == DownState.waiting) {
         downloadProccess(_waitingQueue.elementAt(i));
       }
+      if (_waitingQueue.elementAt(i).state == DownState.done) {
+        _waitingQueue.removeAt(i);
+        notifyListeners();
+      }
       i++;
     }
   }
 
   Future downloadProccess(ChapterDownloadModel chapter) async {
-    _syncFlag++;
-    var directory = await new Directory(
-            "$_downloadPath/${chapter.comicId}/${chapter.chapterId}")
-        .create(recursive: true);
-    assert(await directory.exists() == true);
-    //输出绝对路径
-    print("Path: ${directory.absolute.path}");
+    try {
+      _syncFlag++;
+      var directory = await new Directory(
+              "$_downloadPath/${chapter.comicId}/${chapter.chapterId}")
+          .create(recursive: true);
+      assert(await directory.exists() == true);
+      //输出绝对路径
+      print("Path: ${directory.absolute.path}");
 
-    chapter.setState(DownState.loading);
+      chapter.setState(DownState.loading);
 
-    await chapter.loadPages();
+      await chapter.loadChapterMeta();
 
-    chapter.setState(DownState.downloading);
+      chapter.setState(DownState.downloading);
 
-    int length = chapter.detail.page_url.length;
-    for (int i = 0; i < length; i++) {
-      if (chapter.state != DownState.downloading) {
-        _syncFlag--;
-        return;
+      int length = chapter.detail.page_url.length;
+      for (int i = 0; i < length; i++) {
+        if (chapter.state != DownState.downloading) {
+          _syncFlag--;
+          startDownload();
+          return;
+        }
+        String index = '';
+        if (i < 10) {
+          index = '000' + i.toString();
+        } else if (i < 100) {
+          index = '00' + i.toString();
+        } else if (i < 1000) {
+          index = '0' + i.toString();
+        }
+        await Dio()
+            .download(
+                chapter.detail.page_url[i], "${directory.path}/$index.jpg",
+                options: options)
+            .whenComplete(() {
+          print('${chapter.chapterId} $i done');
+          chapter.updateProgress(i / length);
+        });
+        chapter.detail.page_url[i] = "${directory.path}/$index.jpg";
+        showProgressNotification(chapter.chapterId, chapter.chapterName,
+            chapter.comicName, length, i + 1);
+        notifyListeners();
       }
-      String index = '';
-      if (i < 10) {
-        index = '000' + i.toString();
-      } else if (i < 100) {
-        index = '00' + i.toString();
-      } else if (i < 1000) {
-        index = '0' + i.toString();
-      }
-      await Dio()
-          .download(chapter.detail.page_url[i], "${directory.path}/$index.jpg",
-              options: options)
-          .whenComplete(() {
-        print('${chapter.chapterId} $i done');
-        chapter.updateProgress(i / length);
-      });
+
+      chapter.storeChapterMeta(_downloadPath);
+
+      chapter.setState(DownState.done);
+
+      print('${chapter.chapterId} done');
+
+      _waitingQueue.remove(chapter);
+
+      showFinishNotification(
+          chapter.chapterId, chapter.chapterName, chapter.comicName);
+
+      _syncFlag--;
+
+      startDownload();
+    } on Exception catch (e) {
+      print(e);
+      chapter.setState(DownState.error);
+      _syncFlag--;
+      startDownload();
     }
+  }
 
-    chapter.setState(DownState.done);
+  Future showProgressNotification(int chapterId, String chapterName,
+      String comicName, int maxProgress, int progress) async {
+    final AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'dmzj',
+      'comicDoanload',
+      '漫画下载',
+      channelShowBadge: false,
+      importance: Importance.low,
+      priority: Priority.low,
+      ongoing: true,
+      playSound: false,
+      enableVibration: false,
+      showProgress: true,
+      maxProgress: maxProgress,
+      progress: progress,
+      groupKey: 'com.tomzds9.dmzj.DOWNLOAD_NOTIFICATION',
+      setAsGroupSummary: true,
+    );
+    final NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+    await notifier.show(
+        chapterId, '正在下载：$comicName', chapterName, platformChannelSpecifics,
+        payload: chapterId.toString());
+  }
 
-    print('${chapter.chapterId} done');
-
-    _waitingQueue.remove(chapter);
-
-    _syncFlag--;
-
-    startDownload();
+  Future showFinishNotification(
+      int chapterId, String chapterName, String comicName) async {
+    final AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'dmzj',
+      'comicDoanload',
+      '漫画下载',
+      channelShowBadge: false,
+      importance: Importance.low,
+      priority: Priority.low,
+      playSound: false,
+      enableVibration: false,
+      groupKey: 'com.tomzds9.dmzj.DOWNLOAD_NOTIFICATION',
+      setAsGroupSummary: true,
+    );
+    final NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+    await notifier.show(
+        chapterId, '下载完成：$comicName', chapterName, platformChannelSpecifics,
+        payload: chapterId.toString());
   }
 }

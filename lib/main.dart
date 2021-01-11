@@ -16,6 +16,7 @@ import 'package:flutter_dmzj/views/novel/novel_home.dart';
 import 'package:flutter_dmzj/views/setting_page.dart';
 import 'package:flutter_dmzj/views/user/personal_page.dart';
 import 'package:flutter_dmzj/views/user/user_page.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';

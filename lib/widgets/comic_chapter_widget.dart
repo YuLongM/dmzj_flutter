@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_dmzj/helper/utils.dart';
 import 'package:flutter_dmzj/models/comic/comic_detail_model.dart';
 import 'package:flutter_dmzj/views/download/download_models.dart';
+import 'package:provider/provider.dart';
 
 class ComicChapterView extends StatefulWidget {
   final ComicDetail detail;
@@ -95,11 +96,31 @@ class _ComicChapterViewState extends State<ComicChapterView>
                             backgroundColor:
                                 MaterialStateProperty.resolveWith<Color>(
                                     (states) {
-                              if (_list.any((element) =>
-                                  element.chapterId == f.data[i].chapter_id))
-                                return Colors.green[200];
-                              else
-                                return Colors.transparent;
+                              switch (f.data[i].downloadState) {
+                                case 0:
+                                  return Colors.transparent;
+                                case 1:
+                                  {
+                                    var item = Provider.of<Downloader>(context)
+                                        .waitingQueue
+                                        .firstWhere(
+                                            (element) =>
+                                                element.chapterId ==
+                                                f.data[i].chapter_id,
+                                            orElse: () => null);
+                                    if (item != null) {
+                                      return Colors.blue[200];
+                                    } else {
+                                      f.data[i].downloadState = 2;
+                                      return Colors.green[200];
+                                    }
+                                  }
+                                  break;
+                                case 2:
+                                  return Colors.green[200];
+                                default:
+                                  return Colors.transparent;
+                              }
                             }),
                             side: MaterialStateProperty.resolveWith((states) {
                               return BorderSide(
@@ -192,8 +213,11 @@ class _ComicChapterViewState extends State<ComicChapterView>
 
   Future initLocalList() async {
     var list = await DownloadHelper.getChaptersInComic(widget.detail.id);
-    list.forEach((element) {
-      print('${element.chapterName} ${element.state}');
+    widget.detail.chapters.forEach((volume) {
+      volume.data.forEach((chapter) {
+        if (list.any((element) => (element.chapterId == chapter.chapter_id &&
+            element.state == DownState.done))) chapter.downloadState = 2;
+      });
     });
     setState(() {
       _list = list;

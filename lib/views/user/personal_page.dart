@@ -143,24 +143,12 @@ class _PersonalPageState extends State<PersonalPage> {
                                 Icon(Icons.chevron_right, color: Colors.grey),
                             leading: Icon(Icons.file_download),
                             onTap: () {
-                              // Navigator.push(
-                              //   context,
-                              //   MaterialPageRoute(
-                              //     builder: (BuildContext context) =>
-                              //         LocalComicPage(),
-                              //   ),
-                              // )
-                              bool inDebugMode = false;
-                              assert(inDebugMode = true);
-                              if (inDebugMode) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (BuildContext context) =>
-                                          DownloadListView()),
-                                );
-                              }
-                              Fluttertoast.showToast(msg: '敬请期待');
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (BuildContext context) =>
+                                        DownloadList()),
+                              );
                             },
                           ),
                           ListTile(
@@ -169,24 +157,12 @@ class _PersonalPageState extends State<PersonalPage> {
                                 Icon(Icons.chevron_right, color: Colors.grey),
                             leading: Icon(Icons.file_download),
                             onTap: () {
-                              // Navigator.push(
-                              //   context,
-                              //   MaterialPageRoute(
-                              //     builder: (BuildContext context) =>
-                              //         LocalComicPage(),
-                              //   ),
-                              // )
-                              bool inDebugMode = false;
-                              assert(inDebugMode = true);
-                              if (inDebugMode) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (BuildContext context) =>
-                                          LocalComicPage()),
-                                );
-                              }
-                              Fluttertoast.showToast(msg: '敬请期待');
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (BuildContext context) =>
+                                        LocalComicPage()),
+                              );
                             },
                           )
                         ],

@@ -75,3 +75,33 @@ Widget failPage(BuildContext context, Function refresh) {
     ),
   );
 }
+
+Widget emptyPage(BuildContext context, Function refresh) {
+  return Scaffold(
+    body: Container(
+      height: MediaQuery.of(context).size.height,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/empty.gif',
+              width: 200,
+            ),
+            Text(
+              '什么都没有。',
+              style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).accentColor),
+            ),
+            refresh != null
+                ? IconButton(
+                    icon: Icon(Icons.refresh_rounded), onPressed: refresh)
+                : Container(),
+          ],
+        ),
+      ),
+    ),
+  );
+}

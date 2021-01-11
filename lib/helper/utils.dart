@@ -242,7 +242,8 @@ class Utils {
   }) {
     return InkWell(
       onTap: () {
-        Utils.openPage(context, id, type, url: cover, title: title);
+        Utils.openPage(context, id, type,
+            url: cover, title: title, isLocal: isLocal);
       },
       child: Container(
         padding: EdgeInsets.fromLTRB(8, 8, 8, 0),
@@ -387,7 +388,7 @@ class Utils {
   /// 打开页面
   /// [type] 1=漫画，2=小说，5=专题，6=网页，7=新闻，8=漫画作者，10=游戏，11=类目详情，12=个人中心
   static void openPage(BuildContext context, int id, int type,
-      {String url, String title}) {
+      {String url, String title, bool isLocal = false}) {
     if (id == null) {
       Fluttertoast.showToast(msg: '无法打开此内容');
       return;
@@ -397,7 +398,11 @@ class Utils {
         Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (BuildContext context) => ComicDetailPage(id, url)));
+                builder: (BuildContext context) => ComicDetailPage(
+                      id,
+                      url,
+                      isLocal: isLocal,
+                    )));
         break;
       case 2:
         Navigator.push(

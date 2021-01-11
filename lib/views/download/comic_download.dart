@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_dmzj/helper/utils.dart';
 import 'package:flutter_dmzj/models/comic/comic_detail_model.dart';
 import 'package:flutter_dmzj/views/download/download_models.dart';
@@ -25,7 +24,7 @@ class _ComicDownloadPageState extends State<ComicDownloadPage> {
   ViewState state = ViewState.loading;
 
   @override
-  Future<void> initState() {
+  void initState() {
     super.initState();
     _downloader = Provider.of<Downloader>(context, listen: false);
     initList().whenComplete(() {
@@ -71,14 +70,14 @@ class _ComicDownloadPageState extends State<ComicDownloadPage> {
                 _selectAll = !_selectAll;
                 if (_deleteMode) {
                   for (int i = 0; i < _ls.length; i++) {
-                    if (_ls[i].downloaded) {
+                    if (_ls[i].downloadState == 2) {
                       setState(() {
                         deleteState[i] = _selectAll;
                       });
                     }
                   }
                 } else {
-                  for (var item in _ls.where((x) => !x.downloaded)) {
+                  for (var item in _ls.where((x) => x.downloadState == 0)) {
                     setState(() {
                       item.selected = _selectAll;
                     });
@@ -88,42 +87,51 @@ class _ComicDownloadPageState extends State<ComicDownloadPage> {
         ],
       ),
       body: ListView.builder(
-        itemCount: _ls.length,
-        itemBuilder: (ctx, i) => CheckboxListTile(
-          value: _deleteMode ? deleteState[i] : _ls[i].selected,
-          title: Text(
-            _ls[i].volume_name + ' - ' + _ls[i].chapter_title,
-            style: TextStyle(
-                color: _ls[i].downloaded
-                    ? Colors.grey
-                    : Theme.of(context).textTheme.bodyText1.color),
-          ),
-          onChanged: (e) {
-            setState(() {
-              if (_deleteMode) {
-                if (_ls[i].downloaded) {
-                  deleteState[i] = e;
-                }
-              } else {
-                if (!_ls[i].downloaded) {
-                  _ls[i].selected = e;
-                }
-              }
-            });
-          },
-        ),
-      ),
+          itemCount: _ls.length,
+          itemBuilder: (ctx, i) {
+            // var item = Provider.of<Downloader>(context).waitingQueue.firstWhere(
+            //     (element) => element.chapterId == _ls[i].chapter_id,
+            //     orElse: () => null);
+            // if (item != null) {
+            //   if (item.state == DownState.done) {
+            //     _ls[i].downloadState = 2;
+            //   }
+            // }
+            return CheckboxListTile(
+              value: _deleteMode ? deleteState[i] : _ls[i].selected,
+              title: Text(
+                _ls[i].volume_name + ' - ' + _ls[i].chapter_title,
+                style: TextStyle(
+                    color: _deleteMode
+                        ? _ls[i].downloadState == 0
+                            ? Theme.of(context).disabledColor
+                            : Theme.of(context).textTheme.bodyText1.color
+                        : _ls[i].downloadState == 0
+                            ? Theme.of(context).textTheme.bodyText1.color
+                            : Theme.of(context).disabledColor),
+              ),
+              subtitle: getDownStateWiget(i),
+              onChanged: (e) {
+                setState(() {
+                  if (_deleteMode) {
+                    if (_ls[i].downloadState != 0) {
+                      deleteState[i] = e;
+                    }
+                  } else {
+                    if (_ls[i].downloadState == 0) {
+                      _ls[i].selected = e;
+                    }
+                  }
+                });
+              },
+            );
+          }),
       floatingActionButton: AnimatedCrossFade(
         firstChild: FloatingActionButton(
           heroTag: 'ComicDownload',
           child: Icon(Icons.file_download),
           onPressed: () async {
             Fluttertoast.showToast(msg: '添加到列队');
-            //保存漫画detail完整信息
-            //创建一个下载器传入_ls，自动判断是否下载
-            //comic-version(连载)-chapter
-            //在文件夹中下载
-            //或者使用缓存器直接缓存
             _downloader.downloadMeta(widget.detail.id);
 
             for (int i = 0; i < _ls.length; i++) {
@@ -135,8 +143,14 @@ class _ComicDownloadPageState extends State<ComicDownloadPage> {
                     _ls[i].chapter_title,
                     _ls[i].volume_name);
                 _downloader.addToQueue(chapter);
+                _ls[i].selected = false;
+                _ls[i].downloadState = 1;
               }
             }
+
+            setState(() {
+              _ls[0].selected = false;
+            });
 
             print('加入下载列队完成');
             _downloader.startDownload();
@@ -161,7 +175,7 @@ class _ComicDownloadPageState extends State<ComicDownloadPage> {
                   if (await _downloader.deleteFromQueue(_ls[i].chapter_id)) {
                     success += 1;
                     setState(() {
-                      _ls[i].downloaded = false;
+                      _ls[i].downloadState = 0;
                       deleteState[i] = false;
                     });
                   } else
@@ -179,6 +193,30 @@ class _ComicDownloadPageState extends State<ComicDownloadPage> {
     );
   }
 
+  Widget getDownStateWiget(int index) {
+    switch (_ls[index].downloadState) {
+      case 0:
+        return Text('未下载');
+      case 1:
+        {
+          var item = Provider.of<Downloader>(context).waitingQueue.firstWhere(
+              (element) => element.chapterId == _ls[index].chapter_id,
+              orElse: () => null);
+          if (item != null) {
+            return LinearProgressIndicator(value: item.progress);
+          } else {
+            _ls[index].downloadState = 2;
+            return Text('已下载');
+          }
+        }
+        break;
+      case 2:
+        return Text('已下载');
+      default:
+        return Text('出错');
+    }
+  }
+
   Future<void> initList() async {
     _ls = [];
     List<ChapterDownloadModel> downloadList =
@@ -191,7 +229,11 @@ class _ComicDownloadPageState extends State<ComicDownloadPage> {
             orElse: () => null);
         if (temp != null) {
           downloadingState.add(true);
-          item2.downloaded = true;
+          if (temp.state == DownState.done) {
+            item2.downloadState = 2;
+          } else {
+            item2.downloadState = 1;
+          }
         } else
           downloadingState.add(false);
 

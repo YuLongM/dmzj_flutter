@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:battery/battery.dart';
@@ -20,12 +21,15 @@ import 'package:flutter_dmzj/models/comic/comic_web_chapter_detail.dart';
 import 'package:flutter_dmzj/database/comic_history.dart';
 import 'package:flutter_dmzj/views/reader/comic_tc.dart';
 import 'package:flutter_dmzj/widgets/comic_view.dart';
+import 'package:flutter_dmzj/views/download/download_models.dart';
+
 import 'package:flutter_easyrefresh/easy_refresh.dart';
 import 'package:flutter_easyrefresh/material_footer.dart';
 import 'package:flutter_easyrefresh/material_header.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:preload_page_view/preload_page_view.dart';
@@ -464,6 +468,12 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
                                     ),
                                 style: TextStyle(color: Colors.grey),
                               ),
+                              trailing: f.downloadState == 2
+                                  ? Icon(
+                                      Icons.download_done_sharp,
+                                      color: Colors.green,
+                                    )
+                                  : null,
                             ))
                         .toList(),
                   ),
@@ -586,10 +596,12 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
     if (index > 0 && index <= _detail.page_url.length) {
       return PhotoViewGalleryPageOptions(
         filterQuality: FilterQuality.high,
-        imageProvider: CachedNetworkImageProvider(
-          _detail.page_url[index - 1],
-          headers: {"Referer": "http://www.dmzj.com/"},
-        ),
+        imageProvider: _currentItem.downloadState == 2
+            ? FileImage(File(_detail.page_url[index - 1]))
+            : CachedNetworkImageProvider(
+                _detail.page_url[index - 1],
+                headers: {"Referer": "http://www.dmzj.com/"},
+              ),
         initialScale: PhotoViewComputedScale.contained,
         minScale: PhotoViewComputedScale.contained,
         maxScale: PhotoViewComputedScale.covered * 4.1,
@@ -660,10 +672,12 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
                     ? Flexible(
                         child: Image(
                           filterQuality: FilterQuality.high,
-                          image: CachedNetworkImageProvider(
-                            _detail.page_url[2 * index - 1],
-                            headers: {"Referer": "http://www.dmzj.com/"},
-                          ),
+                          image: _currentItem.downloadState == 2
+                              ? FileImage(File(_detail.page_url[2 * index - 1]))
+                              : CachedNetworkImageProvider(
+                                  _detail.page_url[2 * index - 1],
+                                  headers: {"Referer": "http://www.dmzj.com/"},
+                                ),
                         ),
                       )
                     : Container(),
@@ -673,10 +687,12 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
                 Flexible(
                   child: Image(
                     filterQuality: FilterQuality.high,
-                    image: CachedNetworkImageProvider(
-                      _detail.page_url[2 * index - 2],
-                      headers: {"Referer": "http://www.dmzj.com/"},
-                    ),
+                    image: _currentItem.downloadState == 2
+                        ? FileImage(File(_detail.page_url[2 * index - 2]))
+                        : CachedNetworkImageProvider(
+                            _detail.page_url[2 * index - 2],
+                            headers: {"Referer": "http://www.dmzj.com/"},
+                          ),
                   ),
                 ),
               ])
@@ -684,20 +700,24 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
                 Flexible(
                   child: Image(
                     filterQuality: FilterQuality.high,
-                    image: CachedNetworkImageProvider(
-                      _detail.page_url[2 * index - 2],
-                      headers: {"Referer": "http://www.dmzj.com/"},
-                    ),
+                    image: _currentItem.downloadState == 2
+                        ? FileImage(File(_detail.page_url[2 * index - 2]))
+                        : CachedNetworkImageProvider(
+                            _detail.page_url[2 * index - 2],
+                            headers: {"Referer": "http://www.dmzj.com/"},
+                          ),
                   ),
                 ),
                 (2 * index - 1 < _detail.picnum)
                     ? Flexible(
                         child: Image(
                           filterQuality: FilterQuality.high,
-                          image: CachedNetworkImageProvider(
-                            _detail.page_url[2 * index - 1],
-                            headers: {"Referer": "http://www.dmzj.com/"},
-                          ),
+                          image: _currentItem.downloadState == 2
+                              ? FileImage(File(_detail.page_url[2 * index - 1]))
+                              : CachedNetworkImageProvider(
+                                  _detail.page_url[2 * index - 1],
+                                  headers: {"Referer": "http://www.dmzj.com/"},
+                                ),
                         ),
                       )
                     : Container(),
@@ -774,16 +794,18 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
                 return Container(
                   color: Colors.black,
                   padding: EdgeInsets.only(bottom: 0),
-                  child: CachedNetworkImage(
-                      imageUrl: f,
-                      httpHeaders: {"Referer": "http://www.dmzj.com/"},
-                      placeholder: (ctx, i) => Container(
-                            height: 400,
-                            child: Center(
-                              child: CircularProgressIndicator(),
-                            ),
-                          ),
-                      filterQuality: FilterQuality.high),
+                  child: _currentItem.downloadState == 2
+                      ? Image.file(File(f))
+                      : CachedNetworkImage(
+                          imageUrl: f,
+                          httpHeaders: {"Referer": "http://www.dmzj.com/"},
+                          placeholder: (ctx, i) => Container(
+                                height: 400,
+                                child: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              ),
+                          filterQuality: FilterQuality.high),
                 );
               }
             }),
@@ -1065,26 +1087,39 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
       setState(() {
         _loading = true;
       });
-      var api = Api.comicChapterDetail(widget.comicId, _currentItem.chapter_id);
 
-      if (ConfigHelper.getComicWebApi()) {
-        api =
-            Api.comicWebChapterDetail(widget.comicId, _currentItem.chapter_id);
-      }
-      Uint8List responseBody;
-      try {
-        var response = await http.get(api);
-        responseBody = response.bodyBytes;
-      } catch (e) {
-        var file = await _cacheManager.getFileFromCache(api);
-        if (file != null) {
-          responseBody = await file.file.readAsBytes();
+      var jsonMap;
+
+      if (_currentItem.downloadState == 2) {
+        Fluttertoast.showToast(msg: '加载本地缓存');
+        Directory appDocDir = await getApplicationDocumentsDirectory();
+        var _chapterMetaPath = appDocDir.absolute.path +
+            '/downloads/${widget.comicId}/${_currentItem.chapter_id}/metadata';
+        var _chapterMeta = File(_chapterMetaPath);
+        jsonMap = jsonDecode(_chapterMeta.readAsStringSync());
+      } else {
+        var api =
+            Api.comicChapterDetail(widget.comicId, _currentItem.chapter_id);
+
+        if (ConfigHelper.getComicWebApi()) {
+          api = Api.comicWebChapterDetail(
+              widget.comicId, _currentItem.chapter_id);
         }
+        Uint8List responseBody;
+        try {
+          var response = await http.get(api);
+          responseBody = response.bodyBytes;
+        } catch (e) {
+          var file = await _cacheManager.getFileFromCache(api);
+          if (file != null) {
+            responseBody = await file.file.readAsBytes();
+          }
+        }
+
+        var responseStr = utf8.decode(responseBody);
+        jsonMap = jsonDecode(responseStr);
+        await _cacheManager.putFile(api, responseBody);
       }
-
-      var responseStr = utf8.decode(responseBody);
-      var jsonMap = jsonDecode(responseStr);
-
       ComicWebChapterDetail detail = ComicWebChapterDetail.fromJson(jsonMap);
       var historyItem = await ComicHistoryHelper.getItem(widget.comicId);
       if (historyItem != null &&
@@ -1124,7 +1159,6 @@ class _ComicReaderPageState extends State<ComicReaderPage> {
       setState(() {
         _detail = detail;
       });
-      await _cacheManager.putFile(api, responseBody);
       await loadViewPoint();
 
       //ConfigHelper.setComicHistory(widget.comicId, _currentItem.chapter_id);

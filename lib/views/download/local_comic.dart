@@ -26,11 +26,7 @@ class _LocalComicPageState extends State<LocalComicPage> {
   @override
   void initState() {
     super.initState();
-    loadData().whenComplete(() {
-      setState(() {
-        _loading = false;
-      });
-    });
+    loadData();
   }
 
   @override
@@ -39,20 +35,22 @@ class _LocalComicPageState extends State<LocalComicPage> {
       appBar: AppBar(),
       body: _loading
           ? loadingPage(context)
-          : EasyRefresh(
-              child: ListView.builder(
-                itemBuilder: (context, index) {
-                  return Utils.createDetailWidget(
-                      _list[index].id,
-                      1,
-                      '$downloadPath/${_list[index].id}/cover.jpg',
-                      _list[index].title,
-                      context,
-                      isLocal: true);
-                },
-                itemCount: _list.length,
-              ),
-            ),
+          : _list.length == 0
+              ? emptyPage(context, loadData)
+              : EasyRefresh(
+                  child: ListView.builder(
+                    itemBuilder: (context, index) {
+                      return Utils.createDetailWidget(
+                          _list[index].id,
+                          1,
+                          '$downloadPath/${_list[index].id}/cover.jpg',
+                          _list[index].title,
+                          context,
+                          isLocal: true);
+                    },
+                    itemCount: _list.length,
+                  ),
+                ),
     );
   }
 
@@ -63,6 +61,9 @@ class _LocalComicPageState extends State<LocalComicPage> {
         await DownloadHelper.getAllDownloads();
     print(chapterList.length);
     await loadDetail(comicList);
+    setState(() {
+      _loading = false;
+    });
   }
 
   Future initDir() async {

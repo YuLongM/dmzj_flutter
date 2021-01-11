@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:common_utils/common_utils.dart';
@@ -21,13 +22,16 @@ import 'package:flutter_dmzj/widgets/error_pages.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 
 class ComicDetailPage extends StatefulWidget {
   final int comicId;
   final String coverUrl;
-  ComicDetailPage(this.comicId, this.coverUrl, {Key key}) : super(key: key);
+  final bool isLocal;
+  ComicDetailPage(this.comicId, this.coverUrl, {Key key, this.isLocal})
+      : super(key: key);
 
   @override
   _ComicDetailPageState createState() => _ComicDetailPageState();
@@ -535,44 +539,63 @@ class _ComicDetailPageState extends State<ComicDetailPage>
     });
     Provider.of<ComicHistoryProvider>(context, listen: false)
         .updateHistory(widget.comicId);
-    Future.wait([
-      loadDetail(),
-      checkSubscribe(),
-      loadRelated(),
-    ]).then((value) {
-      if (value.any((element) => element == ViewState.fail)) {
+    if (widget.isLocal) {
+      Future.wait([loadDetail()]).then((value) {
         setState(() {
-          _state = ViewState.idle;
+          _state = value[0];
         });
-      }
-      setState(() {
-        _state = value[0];
       });
-    }).catchError((e) {
-      print(e);
-      setState(() {
-        _state = ViewState.fail;
+    } else
+      Future.wait([
+        loadDetail(),
+        checkSubscribe(),
+        loadRelated(),
+      ]).then((value) {
+        if (value.any((element) => element == ViewState.fail)) {
+          setState(() {
+            _state = ViewState.idle;
+          });
+        }
+        setState(() {
+          _state = value[0];
+        });
+      }).catchError((e) {
+        print(e);
+        setState(() {
+          _state = ViewState.fail;
+        });
       });
-    });
   }
 
   Future<ViewState> loadDetail() async {
     try {
-      var api = Api.comicDetail(widget.comicId);
-      Uint8List responseBody;
-      var response = await http.get(Api.comicDetail(widget.comicId));
-      responseBody = response.bodyBytes;
-      if (response.body == "漫画不存在!!!") {
-        var file = await _cacheManager
-            .getFileFromCache('http://comic.cache/${widget.comicId}');
-        if (file == null) {
-          return ViewState.noCopyright;
+      var jsonMap;
+      if (widget.isLocal) {
+        Directory appDocDir = await getApplicationDocumentsDirectory();
+        var _comicMetaPath =
+            appDocDir.absolute.path + '/downloads/${widget.comicId}/metadata';
+        var _comicMeta = File(_comicMetaPath);
+        jsonMap = jsonDecode(_comicMeta.readAsStringSync());
+      } else {
+        var api = Api.comicDetail(widget.comicId);
+        Uint8List responseBody;
+        var response = await http.get(Api.comicDetail(widget.comicId));
+        responseBody = response.bodyBytes;
+        if (response.body == "漫画不存在!!!") {
+          var file = await _cacheManager
+              .getFileFromCache('http://comic.cache/${widget.comicId}');
+          if (file == null) {
+            return ViewState.noCopyright;
+          }
+          responseBody = await file.file.readAsBytes();
         }
-        responseBody = await file.file.readAsBytes();
-      }
 
-      var responseStr = utf8.decode(responseBody);
-      var jsonMap = jsonDecode(responseStr);
+        var responseStr = utf8.decode(responseBody);
+        jsonMap = jsonDecode(responseStr);
+        await _cacheManager.putFile(
+            'http://comic.cache/${widget.comicId}', responseBody,
+            eTag: api, maxAge: Duration(days: 7), fileExtension: 'json');
+      }
 
       ComicDetail detail = ComicDetail.fromJson(jsonMap);
 
@@ -582,9 +605,6 @@ class _ComicDetailPageState extends State<ComicDetailPage>
         });
         return ViewState.noCopyright;
       }
-      await _cacheManager.putFile(
-          'http://comic.cache/${widget.comicId}', responseBody,
-          eTag: api, maxAge: Duration(days: 7), fileExtension: 'json');
 
       _coverUrl = detail.cover;
       _detail = detail;
