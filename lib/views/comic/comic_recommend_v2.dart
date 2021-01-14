@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dmzj/helper/api.dart';
 import 'package:flutter_dmzj/provider/user_info_provider.dart';
@@ -198,7 +199,7 @@ class ComicRecommendState extends State<ComicRecommend>
   }) {
     double coverHeight = MediaQuery.of(context).size.shortestSide * 4 / 9;
     double coverWidth = coverHeight * ratio;
-    return SizedBox(
+    return Container(
       width: items.length < 4
           ? MediaQuery.of(context).size.width /
               (1 + MediaQuery.of(context).orientation.index)
@@ -207,29 +208,37 @@ class ComicRecommendState extends State<ComicRecommend>
         onTap: ontap,
         child: Column(
           children: [
-            ListTile(
-              dense: true,
-              title: Text(
-                title,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            Padding(
+              padding: EdgeInsets.only(left: 8.0),
+              child: ListTile(
+                dense: true,
+                title: Text(
+                  title,
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+                trailing: icon,
               ),
-              trailing: icon,
             ),
             Container(
               height: coverHeight,
               child: ListView.builder(
+                padding: EdgeInsets.only(left: 16),
                 itemBuilder: (context, i) {
+                  double radius = 12.0;
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Material(
                       elevation: 2,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                        borderRadius: BorderRadius.all(Radius.circular(radius)),
                       ),
                       child: InkWell(
-                        onTap: () {},
+                        onTap: () {
+                          Utils.openPage(context, items[i].id, items[i].type,
+                              url: items[i].cover, title: items[i].title);
+                        },
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(radius),
                           child: Stack(
                             fit: StackFit.expand,
                             children: [
@@ -243,7 +252,6 @@ class ComicRecommendState extends State<ComicRecommend>
                                   gradient: LinearGradient(
                                       colors: [
                                         Colors.black87,
-                                        Colors.black54,
                                         Colors.transparent,
                                       ],
                                       begin: Alignment.bottomCenter,
@@ -253,7 +261,7 @@ class ComicRecommendState extends State<ComicRecommend>
                               Align(
                                   alignment: Alignment.bottomLeft,
                                   child: Padding(
-                                    padding: EdgeInsets.all(8),
+                                    padding: EdgeInsets.all(radius),
                                     child: Text(items[i].title,
                                         style: TextStyle(
                                           color: Colors.white,
@@ -273,6 +281,9 @@ class ComicRecommendState extends State<ComicRecommend>
                 scrollDirection: Axis.horizontal,
                 physics: BouncingScrollPhysics(),
               ),
+            ),
+            SizedBox(
+              height: 8,
             ),
           ],
         ),

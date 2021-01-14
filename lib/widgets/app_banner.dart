@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dmzj/helper/utils.dart';
 
 class AppBanner extends StatefulWidget {
   final List<Widget> items;
@@ -70,48 +71,45 @@ class BannerImageItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: InkWell(
-        onTap: onTaped,
-        child: Stack(
-          alignment: AlignmentDirectional.bottomStart,
-          fit: StackFit.expand,
-          children: <Widget>[
-            ClipRRect(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              child: CachedNetworkImage(
-                imageUrl: pic,
-                fit: BoxFit.cover,
-                httpHeaders: {"Referer": "http://www.dmzj.com/"},
-                placeholder: (context, url) => Center(
-                  child: Center(child: Icon(Icons.photo)),
+      padding: const EdgeInsets.all(8.0),
+      child: Material(
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8.0)),
+        ),
+        child: InkWell(
+          onTap: () {},
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image(
+                  image: Utils.createCachedImageProvider(pic),
+                  fit: BoxFit.cover,
                 ),
-                errorWidget: (context, url, error) =>
-                    Center(child: Icon(Icons.error)),
-              ),
-            ),
-            Positioned(
-                bottom: 4,
-                left: 8,
-                child: Container(
+                Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                    color: Colors.black.withAlpha(75),
+                    gradient: LinearGradient(colors: [
+                      Colors.black87,
+                      Colors.transparent,
+                    ], begin: Alignment.bottomCenter, end: Alignment.center),
                   ),
-                  padding: EdgeInsets.all(8),
-                  child: Text(title,
-                      style: TextStyle(
-                        color: Colors.white,
-                        shadows: [
-                          Shadow(
-                            blurRadius: 6.0,
-                            color: Colors.black26,
-                            offset: Offset(2.0, 2.0),
+                ),
+                Align(
+                    alignment: Alignment.bottomLeft,
+                    child: Padding(
+                      padding: EdgeInsets.all(8),
+                      child: Text(title,
+                          style: TextStyle(
+                            color: Colors.white,
                           ),
-                        ],
-                      )),
-                ))
-          ],
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis),
+                    ))
+              ],
+            ),
+          ),
         ),
       ),
     );
