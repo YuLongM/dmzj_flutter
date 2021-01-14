@@ -37,8 +37,12 @@ Widget noCopyrightPage(BuildContext context) {
             SizedBox(
               height: 8,
             ),
-            IconButton(
-                icon: Icon(Icons.arrow_back),
+            FloatingActionButton(
+                backgroundColor: Theme.of(context).cardColor,
+                child: Icon(
+                  Icons.arrow_back,
+                  color: Colors.pink[100],
+                ),
                 onPressed: () {
                   Navigator.pop(context);
                 }),
@@ -68,7 +72,10 @@ Widget failPage(BuildContext context, Function refresh) {
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).accentColor),
             ),
-            IconButton(icon: Icon(Icons.refresh_rounded), onPressed: refresh),
+            FloatingActionButton(
+                backgroundColor: Theme.of(context).cardColor,
+                child: Icon(Icons.refresh_rounded),
+                onPressed: refresh),
           ],
         ),
       ),

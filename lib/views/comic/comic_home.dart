@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dmzj/helper/utils.dart';
 import 'package:flutter_dmzj/views/comic/comic_category.dart';
 import 'package:flutter_dmzj/views/comic/comic_rank.dart';
-import 'package:flutter_dmzj/views/comic/comic_recommend.dart';
+import 'package:flutter_dmzj/views/comic/comic_recommend_v2.dart';
 import 'package:flutter_dmzj/views/comic/comic_search.dart';
 import 'package:flutter_dmzj/views/comic/comic_special.dart';
 import 'package:flutter_dmzj/views/comic/comic_update.dart';

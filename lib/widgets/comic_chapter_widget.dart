@@ -45,8 +45,6 @@ class _ComicChapterViewState extends State<ComicChapterView>
 
               dataReverse(f);
               return Container(
-                padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-                width: double.infinity,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
@@ -155,7 +153,7 @@ class _ComicChapterViewState extends State<ComicChapterView>
                         );
                       },
                     ),
-                    SizedBox(height: 8)
+                    Divider()
                   ],
                 ),
               );

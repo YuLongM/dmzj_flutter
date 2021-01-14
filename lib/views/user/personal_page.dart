@@ -4,7 +4,7 @@ import 'package:flutter_dmzj/provider/user_info_provider.dart';
 import 'package:flutter_dmzj/helper/utils.dart';
 import 'package:flutter_dmzj/views/download/download_list_view.dart';
 import 'package:flutter_dmzj/views/download/local_comic.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_dmzj/widgets/collapse_header.dart';
 // import 'package:flutter_dmzj/views/download/local_comic.dart';
 import 'package:provider/provider.dart';
 
@@ -15,27 +15,17 @@ class PersonalPage extends StatefulWidget {
   _PersonalPageState createState() => _PersonalPageState();
 }
 
-const myExpandedHeight = 240.0;
-
 class _PersonalPageState extends State<PersonalPage> {
-  ScrollController _scrollController;
   bool isCollapsed = false;
 
   @override
   void initState() {
     super.initState();
-    _scrollController = new ScrollController();
-    _scrollController.addListener(() {
-      setState(() {
-        isCollapsed = _isCollapsed;
-      });
-    });
   }
 
   @override
   void dispose() {
     //为了避免内存泄露，需要调用_controller.dispose
-    _scrollController.dispose();
     super.dispose();
   }
 
@@ -43,61 +33,46 @@ class _PersonalPageState extends State<PersonalPage> {
     return MediaQuery.of(context).padding.top;
   }
 
-  bool get _isCollapsed {
-    return _scrollController.hasClients &&
-        _scrollController.offset >=
-            myExpandedHeight - kToolbarHeight - getSafebar();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: NestedScrollView(
-        controller: _scrollController,
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
           return <Widget>[
             SliverOverlapAbsorber(
               handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-              sliver: SliverAppBar(
+              sliver: SliverPersistentHeader(
                 pinned: true,
-                leading: Offstage(
-                    offstage: !isCollapsed,
-                    child: Padding(
-                      padding: EdgeInsets.all(5),
-                      child: _getAvatarSmall(),
-                    )),
-                expandedHeight: myExpandedHeight - getSafebar(),
-                flexibleSpace: FlexibleSpaceBar(
-                  collapseMode: CollapseMode.pin,
-                  background: Stack(
-                    children: <Widget>[
-                      Image.asset(
-                        "assets/img_ucenter_def_bac.jpg",
-                        fit: BoxFit.cover,
-                        height: myExpandedHeight,
-                        width: MediaQuery.of(context).size.width,
+                delegate: CollapseHeaderDelegate(
+                    avatar: InkWell(
+                      onTap: onTapAvatar,
+                      child: Provider.of<AppUserInfoProvider>(context).isLogin
+                          ? null
+                          : Icon(Icons.account_circle),
+                    ),
+                    label: InkWell(
+                      onTap: onTapAvatar,
+                      child: Text(
+                        Provider.of<AppUserInfoProvider>(context).isLogin
+                            ? Provider.of<AppUserInfoProvider>(context)
+                                .loginInfo
+                                .nickname
+                            : '登录',
+                        style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
                       ),
-                      Positioned(
-                          child: Container(
-                        width: MediaQuery.of(context).size.width,
-                        height: myExpandedHeight,
-                        padding: EdgeInsets.only(
-                            top: MediaQuery.of(context).padding.top),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                            colors: [
-                              Theme.of(context).cardColor.withOpacity(1),
-                              Theme.of(context).cardColor.withOpacity(0.3)
-                            ],
-                          ),
-                        ),
-                        child: _getAvatar(),
-                      ))
-                    ],
-                  ),
-                ),
+                    ),
+                    maxHeight: MediaQuery.of(context).size.shortestSide * 0.68,
+                    minHeight: kToolbarHeight,
+                    safeOffset: getSafebar(),
+                    image: Provider.of<AppUserInfoProvider>(context).isLogin
+                        ? Utils.createCachedImageProvider(
+                            Provider.of<AppUserInfoProvider>(context)
+                                .loginInfo
+                                .photo)
+                        : null),
               ),
             ),
           ];
@@ -113,7 +88,7 @@ class _PersonalPageState extends State<PersonalPage> {
                 child: Column(
                   children: [
                     Material(
-                      color: Theme.of(context).cardColor,
+                      //
                       child: Column(
                         children: <Widget>[
                           ListTile(
@@ -174,7 +149,7 @@ class _PersonalPageState extends State<PersonalPage> {
                     ),
 
                     Material(
-                      color: Theme.of(context).cardColor,
+                      //
                       child: SwitchListTile(
                         onChanged: (value) {
                           Provider.of<AppThemeProvider>(context, listen: false)
@@ -193,7 +168,6 @@ class _PersonalPageState extends State<PersonalPage> {
                     Offstage(
                       offstage: Provider.of<AppThemeProvider>(context).sysDark,
                       child: Material(
-                        color: Theme.of(context).cardColor,
                         child: SwitchListTile(
                           onChanged: (value) {
                             Provider.of<AppThemeProvider>(context,
@@ -208,7 +182,6 @@ class _PersonalPageState extends State<PersonalPage> {
                     ),
                     //主题设置
                     Material(
-                      color: Theme.of(context).cardColor,
                       child: ListTile(
                         title: Text("主题切换"),
                         leading: Icon(Icons.color_lens),
@@ -232,7 +205,6 @@ class _PersonalPageState extends State<PersonalPage> {
                       height: 12,
                     ),
                     Material(
-                      color: Theme.of(context).cardColor,
                       child: Column(children: <Widget>[
                         ListTile(
                           title: Text("设置"),
@@ -255,135 +227,32 @@ class _PersonalPageState extends State<PersonalPage> {
     );
   }
 
-  Widget _getAvatar() {
-    return Provider.of<AppUserInfoProvider>(context).isLogin
-        ? InkWell(
-            onTap: () {
-              showDialog(
-                  context: context,
-                  builder: (_) => AlertDialog(
-                        title: Text("退出登录"),
-                        content: Text("确定要退出登录吗?"),
-                        actions: <Widget>[
-                          new FlatButton(
-                            child: new Text("取消"),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                          new FlatButton(
-                            child: new Text("确定"),
-                            onPressed: () {
-                              Provider.of<AppUserInfoProvider>(context,
-                                      listen: false)
-                                  .logout();
-                              Navigator.of(context).pop();
-                            },
-                          )
-                        ],
-                      ));
-            },
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Container(
-                  width: 64,
-                  height: 64,
-                  child: CircleAvatar(
-                    radius: 32,
-                    backgroundImage: Utils.createCachedImageProvider(
-                        Provider.of<AppUserInfoProvider>(context)
-                            .loginInfo
-                            .photo),
+  void onTapAvatar() {
+    if (Provider.of<AppUserInfoProvider>(context, listen: false).isLogin) {
+      showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+                title: Text("退出登录"),
+                content: Text("确定要退出登录吗?"),
+                actions: <Widget>[
+                  new FlatButton(
+                    child: new Text("取消"),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
                   ),
-                ),
-                SizedBox(
-                  height: 8,
-                ),
-                Text(
-                  Provider.of<AppUserInfoProvider>(context).loginInfo.nickname,
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(
-                  height: 8,
-                ),
-                Text(
-                  Provider.of<AppUserInfoProvider>(context)
-                          .userProfile
-                          ?.description ??
-                      "",
-                  style: TextStyle(color: Colors.white, fontSize: 12),
-                ),
-              ],
-            ),
-          )
-        : InkWell(
-            onTap: () => Navigator.pushNamed(context, "/Login"),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Container(
-                  width: 64,
-                  height: 64,
-                  child: CircleAvatar(
-                    child: Icon(Icons.account_circle),
-                  ),
-                ),
-                SizedBox(
-                  height: 8,
-                ),
-                Text(
-                  "点击登录",
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          );
-  }
-
-  Widget _getAvatarSmall() {
-    return Padding(
-      padding: EdgeInsets.all(4),
-      child: InkWell(
-        onTap: () {
-          Provider.of<AppUserInfoProvider>(context).isLogin
-              ? showDialog(
-                  context: context,
-                  builder: (_) => AlertDialog(
-                        title: Text("退出登录"),
-                        content: Text("确定要退出登录吗?"),
-                        actions: <Widget>[
-                          new FlatButton(
-                            child: new Text("取消"),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                          new FlatButton(
-                            child: new Text("确定"),
-                            onPressed: () {
-                              Provider.of<AppUserInfoProvider>(context,
-                                      listen: false)
-                                  .logout();
-                              Navigator.of(context).pop();
-                            },
-                          )
-                        ],
-                      ))
-              : Navigator.pushNamed(context, "/Login");
-        },
-        child: Provider.of<AppUserInfoProvider>(context).isLogin
-            ? CircleAvatar(
-                radius: 32,
-                backgroundImage: Utils.createCachedImageProvider(
-                    Provider.of<AppUserInfoProvider>(context).loginInfo.photo),
-              )
-            : CircleAvatar(
-                child: Icon(Icons.account_circle),
-              ),
-      ),
-    );
+                  new FlatButton(
+                    child: new Text("确定"),
+                    onPressed: () {
+                      Provider.of<AppUserInfoProvider>(context, listen: false)
+                          .logout();
+                      Navigator.of(context).pop();
+                    },
+                  )
+                ],
+              ));
+    } else {
+      Navigator.pushNamed(context, "/Login");
+    }
   }
 }
