@@ -22,12 +22,7 @@ class _AppBannerState extends State<AppBanner> {
         children: <Widget>[
           CarouselSlider(
             options: CarouselOptions(
-              onPageChanged: (i, e) {
-                setState(() {
-                  currentBannerIndex = i;
-                });
-              },
-              aspectRatio: 7.5 / 4,
+              aspectRatio: 21 / 9,
               viewportFraction: 0.9,
             ),
             items: widget.items.length != 0
@@ -38,23 +33,31 @@ class _AppBannerState extends State<AppBanner> {
                     )
                   ],
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: widget.items.map<Widget>((index) {
-              return InkWell(
-                child: Container(
-                  width: 8.0,
-                  height: 8.0,
-                  margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0),
-                  decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: currentBannerIndex == widget.items.indexOf(index)
-                          ? Theme.of(context).accentColor
-                          : Color.fromRGBO(0, 0, 0, 0.4)),
-                ),
-              );
-            }).toList(),
-          )
+          ButtonBar(
+            alignment: MainAxisAlignment.center,
+            children: [
+              FlatButton.icon(
+                onPressed: () {},
+                icon: Icon(Icons.bar_chart),
+                label: Text('排行'),
+              ),
+              FlatButton.icon(
+                onPressed: () {},
+                icon: Icon(Icons.update),
+                label: Text('更新'),
+              ),
+              FlatButton.icon(
+                onPressed: () {},
+                icon: Icon(Icons.bookmark_border),
+                label: Text('专题'),
+              ),
+              FlatButton.icon(
+                onPressed: () {},
+                icon: Icon(Icons.view_carousel),
+                label: Text('分类'),
+              ),
+            ],
+          ),
         ],
       ),
     );

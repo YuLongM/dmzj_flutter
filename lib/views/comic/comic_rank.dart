@@ -81,13 +81,52 @@ class _ComicUpdatePageState extends State<ComicRankPage>
             footer: MaterialFooter(),
             child: ListView.builder(
                 itemCount: _list.length,
+                itemExtent: 3 * kToolbarHeight,
                 itemBuilder: (cxt, i) {
-                  return Utils.createDetailWidget(int.parse(_list[i].comic_id),
-                      1, _list[i].cover, _list[i].title, context,
-                      category: _list[i].types,
-                      author: _list[i].authors,
-                      //lastestChapter: _list[i].last_update_chapter_name,
-                      updateTime: int.parse(_list[i].last_updatetime));
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Stack(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image(
+                                image: Utils.createCachedImageProvider(
+                                    _list[i].cover),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            alignment: Alignment.topLeft,
+                            height: 24,
+                            width: 24,
+                            child: Text('$i'),
+                          ),
+                        ],
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(_list[i].title,
+                                  style: Theme.of(context).textTheme.headline6),
+                              Text(_list[i].types,
+                                  style: Theme.of(context).textTheme.subtitle1),
+                              Text(_list[i].authors,
+                                  style: Theme.of(context).textTheme.bodyText1),
+                              Text(_list[i].last_update_chapter_name,
+                                  style: Theme.of(context).textTheme.bodyText2)
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
                 }),
           ),
         )

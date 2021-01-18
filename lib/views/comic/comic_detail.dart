@@ -578,6 +578,7 @@ class _ComicDetailPageState extends State<ComicDetailPage>
         jsonMap = jsonDecode(_comicMeta.readAsStringSync());
       } else {
         var api = Api.comicDetail(widget.comicId);
+        print(api);
         Uint8List responseBody;
         var response = await http.get(Api.comicDetail(widget.comicId));
         responseBody = response.bodyBytes;
@@ -596,7 +597,7 @@ class _ComicDetailPageState extends State<ComicDetailPage>
             'http://comic.cache/${widget.comicId}', responseBody,
             eTag: api, maxAge: Duration(days: 7), fileExtension: 'json');
       }
-
+      print(jsonMap);
       ComicDetail detail = ComicDetail.fromJson(jsonMap);
 
       if (detail.title == null || detail.title == "") {

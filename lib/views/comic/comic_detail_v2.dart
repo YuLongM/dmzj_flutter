@@ -29,18 +29,18 @@ import 'package:share/share.dart';
 
 const Map<int, Color> tagColor = {8: Colors.pink, 13: Colors.lightBlue};
 
-class ComicDetailPage extends StatefulWidget {
+class ComicDetailPageV2 extends StatefulWidget {
   final int comicId;
   final String coverUrl;
   final bool isLocal;
-  ComicDetailPage(this.comicId, this.coverUrl, {Key key, this.isLocal})
+  ComicDetailPageV2(this.comicId, this.coverUrl, {Key key, this.isLocal})
       : super(key: key);
 
   @override
   _ComicDetailPageState createState() => _ComicDetailPageState();
 }
 
-class _ComicDetailPageState extends State<ComicDetailPage>
+class _ComicDetailPageState extends State<ComicDetailPageV2>
     with AutomaticKeepAliveClientMixin, TickerProviderStateMixin {
   TabController _tabController;
   double detailExpandHeight = 150 + kToolbarHeight + 24;
@@ -227,29 +227,23 @@ class _ComicDetailPageState extends State<ComicDetailPage>
                 height: height + safeArea + kToolbarHeight,
                 child: Stack(children: [
                   Container(
-                    height: height + safeArea,
-                    width: MediaQuery.of(context).size.width,
-                    child: ImageFiltered(
-                      imageFilter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                      child: Image(
-                        fit: BoxFit.cover,
-                        image: Utils.createCachedImageProvider(_detail.cover),
-                      ),
-                    ),
-                  ),
-                  Container(
                     height: height + safeArea + kToolbarHeight / 2,
                     padding: EdgeInsets.fromLTRB(padding, padding + safeArea,
                         padding, padding + kToolbarHeight / 2),
+                    color: Theme.of(context).accentColor,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Container(
                           width: (height - padding * 2) * 0.75,
                           height: height - padding * 2,
-                          child: Image(
-                            image:
-                                Utils.createCachedImageProvider(_detail.cover),
+                          padding: EdgeInsets.all(8),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image(
+                              image: Utils.createCachedImageProvider(
+                                  _detail.cover),
+                            ),
                           ),
                         ),
                         Expanded(

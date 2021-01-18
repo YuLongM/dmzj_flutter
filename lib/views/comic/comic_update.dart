@@ -44,17 +44,18 @@ class _ComicUpdatePageState extends State<ComicUpdatePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Container(
-          padding: EdgeInsets.symmetric(vertical: 2, horizontal: 8),
-          child: Row(
-            children: _types.keys
-                .map(
-                  (f) => Padding(
-                    padding: EdgeInsets.only(right: 8),
-                    child: ButtonTheme(
+    return NestedScrollView(
+      headerSliverBuilder: (context, f) => [
+        SliverAppBar(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          pinned: true,
+          title: Container(
+            padding: EdgeInsets.symmetric(vertical: 2, horizontal: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: _types.keys
+                  .map(
+                    (f) => ButtonTheme(
                       minWidth: 20,
                       height: 32,
                       child: OutlineButton(
@@ -81,33 +82,34 @@ class _ComicUpdatePageState extends State<ComicUpdatePage>
                         },
                       ),
                     ),
-                  ),
-                )
-                .toList(),
+                  )
+                  .toList(),
+            ),
           ),
         ),
-        Expanded(
-          child: EasyRefresh(
-            onRefresh: () async {
-              _page = 0;
-              await loadData();
-            },
-            onLoad: loadData,
-            header: MaterialHeader(),
-            footer: MaterialFooter(),
-            child: ListView.builder(
-                itemCount: _list.length,
-                itemBuilder: (ctx, i) {
-                  return Utils.createDetailWidget(
-                      _list[i].id, 1, _list[i].cover, _list[i].title, context,
-                      category: _list[i].types,
-                      author: _list[i].authors,
-                      latestChapter: _list[i].last_update_chapter_name,
-                      updateTime: _list[i].last_updatetime);
-                }),
-          ),
-        )
       ],
+      body: EasyRefresh.custom(
+        onRefresh: () async {
+          _page = 0;
+          await loadData();
+        },
+        onLoad: loadData,
+        header: MaterialHeader(),
+        footer: MaterialFooter(),
+        slivers: [
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (ctx, i) => Utils.createDetailWidget(
+                  _list[i].id, 1, _list[i].cover, _list[i].title, context,
+                  category: _list[i].types,
+                  author: _list[i].authors,
+                  latestChapter: _list[i].last_update_chapter_name,
+                  updateTime: _list[i].last_updatetime),
+              childCount: _list.length,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

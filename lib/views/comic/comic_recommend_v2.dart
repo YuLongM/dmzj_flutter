@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dmzj/helper/api.dart';
 import 'package:flutter_dmzj/provider/user_info_provider.dart';
@@ -51,130 +50,112 @@ class ComicRecommendState extends State<ComicRecommend>
     }
   }
 
-  double getRatio(bool orentation) {
-    var width = MediaQuery.of(context).size.shortestSide;
-    double s_width = (width - 24) / 3 - 32;
-    double w_width = (width - 16) / 2 - 32;
-    double s_ratio = s_width / ((s_width * (360 / 270)) + 36);
-    double w_ratio = w_width / ((w_width * (170 / 320)) + 36);
-    if (orentation) {
-      return s_ratio;
-    } else {
-      return w_ratio;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
     double widthMax = MediaQuery.of(context).size.width /
         (1 + MediaQuery.of(context).orientation.index);
     return Scaffold(
+      appBar: AppBar(
+        title: Text('漫画'),
+      ),
       //todo: 适配平板页面，使用sliver组件
-      body: EasyRefresh.custom(
+      body: EasyRefresh(
         header: MaterialHeader(),
         onRefresh: refreshData,
-        slivers: [
-          SliverToBoxAdapter(
-            child: Wrap(
-              alignment: WrapAlignment.center,
-              children: [
-                Container(
-                  width: widthMax,
-                  child: AppBanner(
-                      items: _banners
-                          .map<Widget>(
-                            (i) => BannerImageItem(
-                              pic: i.cover,
-                              title: i.title,
-                              onTaped: () {
-                                if (i.url.length == 0)
-                                  Utils.openPage(context, i.id, i.type,
-                                      url: i.cover, title: i.title);
-                                else
-                                  Utils.openPage(context, i.id, i.type,
-                                      url: i.url, title: i.title);
-                              },
-                            ),
-                          )
-                          .toList()),
-                ),
-                Container(
-                  width: MediaQuery.of(context).size.width /
-                      (1 + MediaQuery.of(context).orientation.index),
-                  child: Provider.of<AppUserInfoProvider>(context).isLogin
-                      ? _getItem(
-                          "我的订阅",
-                          _mySub,
-                          icon: Icon(Icons.chevron_right, color: Colors.grey),
-                          ontap: () => Utils.openSubscribePage(context),
-                        )
-                      : Container(
-                          width: widthMax,
-                          child: AspectRatio(
-                            aspectRatio: 7 / 4,
-                            child: Card(
-                              margin: EdgeInsets.all(8),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    '请登录',
-                                    style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  RaisedButton(
-                                      onPressed: () {},
-                                      color: Theme.of(context).accentColor,
-                                      child: Icon(
-                                        Icons.arrow_forward,
-                                        color: Colors.white,
-                                      ),
-                                      shape: CircleBorder())
-                                ],
-                              ),
-                            ),
-                          )),
-                ),
-                _getItem(
-                  "近期必看",
-                  _recommend,
-                  ontap: () {},
-                ),
-                _getItem(
-                  "猜你喜欢",
-                  _like,
-                  icon: Icon(Icons.refresh, color: Colors.grey),
-                  ontap: () async => await loadLike(),
-                ),
-                _getItem(
-                  "热门连载",
-                  _hot,
-                  icon: Icon(Icons.refresh, color: Colors.grey),
-                  ontap: () => loadHot(),
-                ),
-                _getItem("火热专题", _special,
-                    ratio: 16 / 9,
-                    icon: Icon(Icons.chevron_right, color: Colors.grey),
-                    ontap: () => Utils.changeComicHomeTabIndex.fire(4)),
-                _getItem(
-                  "条漫专区",
-                  _tiaoman,
-                  ratio: 16 / 9,
-                ),
-                _getItem("动画专区", _anime,
-                    icon: Icon(Icons.chevron_right, color: Colors.grey),
-                    ontap: () =>
-                        Utils.openPage(context, 17192, 11, title: "动画")),
-                _getItem("最新上架", _new,
-                    icon: Icon(Icons.chevron_right, color: Colors.grey),
-                    ontap: () => Utils.changeComicHomeTabIndex.fire(1)),
-              ],
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          children: [
+            Container(
+              width: widthMax,
+              child: AppBanner(
+                  items: _banners
+                      .map<Widget>(
+                        (i) => BannerImageItem(
+                          pic: i.cover,
+                          title: i.title,
+                          onTaped: () {
+                            if (i.url.length == 0)
+                              Utils.openPage(context, i.id, i.type,
+                                  url: i.cover, title: i.title);
+                            else
+                              Utils.openPage(context, i.id, i.type,
+                                  url: i.url, title: i.title);
+                          },
+                        ),
+                      )
+                      .toList()),
             ),
-          ),
-          SliverToBoxAdapter(
-            child: Container(
+            Container(
+              width: MediaQuery.of(context).size.width /
+                  (1 + MediaQuery.of(context).orientation.index),
+              child: Provider.of<AppUserInfoProvider>(context).isLogin
+                  ? _getItem(
+                      "我的订阅",
+                      _mySub,
+                      icon: Icon(Icons.chevron_right, color: Colors.grey),
+                      ontap: () => Utils.openSubscribePage(context),
+                    )
+                  : Container(
+                      width: widthMax,
+                      child: AspectRatio(
+                        aspectRatio: 7 / 4,
+                        child: Card(
+                          margin: EdgeInsets.all(8),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '请登录',
+                                style: TextStyle(
+                                    fontSize: 24, fontWeight: FontWeight.bold),
+                              ),
+                              RaisedButton(
+                                  onPressed: () {},
+                                  color: Theme.of(context).accentColor,
+                                  child: Icon(
+                                    Icons.arrow_forward,
+                                    color: Colors.white,
+                                  ),
+                                  shape: CircleBorder())
+                            ],
+                          ),
+                        ),
+                      )),
+            ),
+            _getItem(
+              "近期必看",
+              _recommend,
+              ontap: () {},
+            ),
+            _getItem(
+              "猜你喜欢",
+              _like,
+              icon: Icon(Icons.refresh, color: Colors.grey),
+              ontap: () async => await loadLike(),
+            ),
+            _getItem(
+              "热门连载",
+              _hot,
+              icon: Icon(Icons.refresh, color: Colors.grey),
+              ontap: () => loadHot(),
+            ),
+            _getItem("火热专题", _special,
+                ratio: 16 / 9,
+                icon: Icon(Icons.chevron_right, color: Colors.grey),
+                ontap: () => Utils.changeComicHomeTabIndex.fire(4)),
+            _getItem(
+              "条漫专区",
+              _tiaoman,
+              ratio: 16 / 9,
+            ),
+            _getItem("动画专区", _anime,
+                icon: Icon(Icons.chevron_right, color: Colors.grey),
+                ontap: () => Utils.openPage(context, 17192, 11, title: "动画")),
+            _getItem("最新上架", _new,
+                icon: Icon(Icons.chevron_right, color: Colors.grey),
+                ontap: () => Utils.changeComicHomeTabIndex.fire(1)),
+            Container(
               height: kToolbarHeight,
               //padding: EdgeInsets.all(12),
               child: Center(
@@ -184,8 +165,8 @@ class ComicRecommendState extends State<ComicRecommend>
                 ),
               ),
             ),
-          )
-        ],
+          ],
+        ),
       ),
     );
   }

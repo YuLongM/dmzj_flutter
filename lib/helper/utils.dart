@@ -13,6 +13,7 @@ import 'package:flutter_dmzj/models/version_info.dart';
 import 'package:flutter_dmzj/views/comic/comic_author.dart';
 import 'package:flutter_dmzj/views/comic/comic_category_detail.dart';
 import 'package:flutter_dmzj/views/comic/comic_detail.dart';
+import 'package:flutter_dmzj/views/comic/comic_detail_v2.dart';
 import 'package:flutter_dmzj/views/comic/comic_special_detail.dart';
 import 'package:flutter_dmzj/views/news/news_detail.dart';
 import 'package:flutter_dmzj/views/novel/novel_category_detail.dart';
@@ -239,6 +240,7 @@ class Utils {
     double width = 270,
     double height = 360,
     bool isLocal = false,
+    int rank = 0,
   }) {
     return InkWell(
       onTap: () {

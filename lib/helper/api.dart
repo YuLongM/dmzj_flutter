@@ -4,8 +4,8 @@ import 'package:crypto/crypto.dart';
 import 'package:convert/convert.dart';
 
 class Api {
-  static final String apiHost = "https://v3api.dmzj.com";
-  static final String version = "2.7.017";
+  static final String apiHost = "https://v3api.dmzj1.com";
+  static final String version = "1.1.0";
   static get timeStamp =>
       (DateTime.now().millisecondsSinceEpoch / 1000).toStringAsFixed(0);
 

@@ -7,6 +7,7 @@ import 'package:flutter_dmzj/provider/reader_config_provider.dart';
 import 'package:flutter_dmzj/helper/config_helper.dart';
 import 'package:flutter_dmzj/database/comic_history.dart';
 import 'package:flutter_dmzj/views/comic/comic_home.dart';
+import 'package:flutter_dmzj/views/comic/comic_recommend_v2.dart';
 import 'package:flutter_dmzj/views/download/download_models.dart';
 import 'package:flutter_dmzj/views/settings/comic_reader_settings.dart';
 import 'package:flutter_dmzj/views/settings/novel_reader_settings.dart';
@@ -138,7 +139,7 @@ class _MyHomePageState extends State<MyHomePage>
   static NewsHomePage newsPage;
   static NovelHomePage novelPage;
   List<Widget> pages = [
-    ComicHomePage(),
+    ComicRecommend(),
     Container(),
     Container(),
     PersonalPage()

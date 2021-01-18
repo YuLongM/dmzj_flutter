@@ -215,6 +215,13 @@ class Downloader extends ChangeNotifier {
   static String _downloadPath;
   static final Options options =
       Options(headers: {"Referer": "http://www.dmzj.com/"});
+  static final Options downloadOptions = Options(headers: {
+    'Referer': 'http://images.dmzj1.com/',
+    'Host': 'imgzip.dmzj1.com',
+    'Connection': 'Keep-Alive',
+    'Accept-Encoding': 'gzip',
+    'User-Agent': 'okhttp/3.12.1'
+  });
   final FlutterLocalNotificationsPlugin notifier =
       FlutterLocalNotificationsPlugin();
 
@@ -371,34 +378,42 @@ class Downloader extends ChangeNotifier {
 
       chapter.setState(DownState.downloading);
 
-      int length = chapter.detail.page_url.length;
-      for (int i = 0; i < length; i++) {
-        if (chapter.state != DownState.downloading) {
-          _syncFlag--;
-          startDownload();
-          return;
-        }
-        String index = '';
-        if (i < 10) {
-          index = '000' + i.toString();
-        } else if (i < 100) {
-          index = '00' + i.toString();
-        } else if (i < 1000) {
-          index = '0' + i.toString();
-        }
-        await Dio()
-            .download(
-                chapter.detail.page_url[i], "${directory.path}/$index.jpg",
-                options: options)
-            .whenComplete(() {
-          print('${chapter.chapterId} $i done');
-          chapter.updateProgress(i / length);
-        });
-        chapter.detail.page_url[i] = "${directory.path}/$index.jpg";
-        showProgressNotification(chapter.chapterId, chapter.chapterName,
-            chapter.comicName, length, i + 1);
-        notifyListeners();
-      }
+      // int length = chapter.detail.page_url.length;
+      // for (int i = 0; i < length; i++) {
+      //   if (chapter.state != DownState.downloading) {
+      //     _syncFlag--;
+      //     startDownload();
+      //     return;
+      //   }
+      //   String index = '';
+      //   if (i < 10) {
+      //     index = '000' + i.toString();
+      //   } else if (i < 100) {
+      //     index = '00' + i.toString();
+      //   } else if (i < 1000) {
+      //     index = '0' + i.toString();
+      //   }
+      //   await Dio()
+      //       .download(
+      //           chapter.detail.page_url[i], "${directory.path}/$index.jpg",
+      //           options: options)
+      //       .whenComplete(() {
+      //     print('${chapter.chapterId} $i done');
+      //     chapter.updateProgress(i / length);
+      //   });
+      //   chapter.detail.page_url[i] = "${directory.path}/$index.jpg";
+      //   showProgressNotification(chapter.chapterId, chapter.chapterName,
+      //       chapter.comicName, length, i + 1);
+      //   notifyListeners();
+      // }
+      print(
+          'https://imgzip.dmzj1.com/w/${chapter.comicId}/${chapter.chapterId}.zip');
+
+      await Dio().download(
+          'https://imgzip.dmzj1.com/d/${chapter.comicId}/${chapter.chapterId}.zip',
+          "${directory.path}/comic.zip", onReceiveProgress: (count, total) {
+        chapter.updateProgress(count / total);
+      }, options: downloadOptions);
 
       chapter.storeChapterMeta(_downloadPath);
 
